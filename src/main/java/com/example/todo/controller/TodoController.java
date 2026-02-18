@@ -21,4 +21,9 @@ public class TodoController {
         model.addAttribute("todos", todos);
         return "todo/list";
     }
+
+    @GetMapping("/new")
+    public String newTodo() {
+        return "todo/new";
+    }
 }
