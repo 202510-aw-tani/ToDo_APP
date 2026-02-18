@@ -20,4 +20,8 @@ public class TodoService {
         todo.setCompleted(false);
         todoMapper.insert(todo);
     }
+
+    public java.util.List<Todo> findAll() {
+        return todoMapper.findAll();
+    }
 }
