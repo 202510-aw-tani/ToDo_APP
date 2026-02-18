@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ja" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
@@ -20,12 +20,15 @@
 
     <div class="card shadow-sm">
         <div class="card-body">
-            <form action="/todo/confirm" method="post">
+            <form th:action="@{/todo/confirm}" action="/todo/confirm" method="post">
                 <div class="mb-3">
                     <label for="title" class="form-label">タイトル</label>
                     <input type="text" id="title" name="title" class="form-control" placeholder="例: 買い物に行く">
                 </div>
-                <button type="submit" class="btn btn-primary">確認画面へ</button>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">確認画面へ</button>
+                    <a class="btn btn-outline-secondary" href="/todo">戻る</a>
+                </div>
             </form>
         </div>
     </div>
