@@ -34,6 +34,7 @@
                     <th style="width: 80px;">ID</th>
                     <th>タイトル</th>
                     <th style="width: 120px;">完了状態</th>
+                    <th style="width: 120px;">操作</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -41,6 +42,11 @@
                     <td th:text="${todo.id}">1</td>
                     <td th:text="${todo.title}">サンプルタスク</td>
                     <td th:text="${todo.completed} ? '完了' : '未完了'">未完了</td>
+                    <td>
+                        <form th:action="@{/todo/{id}/delete(id=${todo.id})}" action="/todo/1/delete" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-danger btn-sm">削除</button>
+                        </form>
+                    </td>
                 </tr>
                 </tbody>
             </table>
