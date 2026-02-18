@@ -60,4 +60,17 @@ public class TodoController {
         model.addAttribute("todo", todoService.findById(id));
         return "todo/edit";
     }
+
+    @PostMapping("/{id}/update")
+    public String update(@PathVariable("id") Long id,
+                         @RequestParam("title") String title,
+                         RedirectAttributes redirectAttributes) {
+        boolean updated = todoService.update(id, title);
+        if (updated) {
+            redirectAttributes.addFlashAttribute("successMessage", "更新が完了しました");
+        } else {
+            redirectAttributes.addFlashAttribute("errorMessage", "更新に失敗しました");
+        }
+        return "redirect:/todo";
+    }
 }

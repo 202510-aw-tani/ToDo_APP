@@ -27,4 +27,11 @@
         WHERE id = #{id}
     </delete>
 
+    <update id="update" parameterType="com.example.todo.model.Todo">
+        UPDATE todos
+        SET title = #{title},
+            completed = #{completed}
+        WHERE id = #{id}
+    </update>
+
 </mapper>

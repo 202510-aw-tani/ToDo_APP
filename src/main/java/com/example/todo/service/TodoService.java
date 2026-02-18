@@ -32,4 +32,12 @@ public class TodoService {
     public Todo findById(Long id) {
         return todoMapper.findById(id);
     }
+
+    public boolean update(Long id, String title) {
+        Todo todo = new Todo();
+        todo.setId(id);
+        todo.setTitle(title);
+        todo.setCompleted(false);
+        return todoMapper.update(todo) > 0;
+    }
 }
