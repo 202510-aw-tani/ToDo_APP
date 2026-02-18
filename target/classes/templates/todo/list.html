@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ja" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
@@ -20,17 +20,19 @@
 
     <div class="card shadow-sm">
         <div class="card-body p-0">
-            <table class="table mb-0">
+            <table class="table table-striped mb-0">
                 <thead class="table-light">
                 <tr>
-                    <th style="width: 60px;">#</th>
-                    <th>内容</th>
+                    <th style="width: 80px;">ID</th>
+                    <th>タイトル</th>
+                    <th style="width: 120px;">完了状態</th>
                 </tr>
                 </thead>
                 <tbody>
-                <tr th:each="todo, stat : ${todos}">
-                    <td th:text="${stat.count}">1</td>
-                    <td th:text="${todo}">買い物に行く</td>
+                <tr th:each="todo : ${todos}">
+                    <td th:text="${todo.id}">1</td>
+                    <td th:text="${todo.title}">サンプルタスク</td>
+                    <td th:text="${todo.completed} ? '完了' : '未完了'">未完了</td>
                 </tr>
                 </tbody>
             </table>
