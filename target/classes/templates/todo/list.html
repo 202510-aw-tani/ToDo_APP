@@ -43,7 +43,8 @@
                     <td th:text="${todo.title}">サンプルタスク</td>
                     <td th:text="${todo.completed} ? '完了' : '未完了'">未完了</td>
                     <td>
-                        <form th:action="@{/todo/{id}/delete(id=${todo.id})}" action="/todo/1/delete" method="post" class="d-inline">
+                        <form th:action="@{/todo/{id}/delete(id=${todo.id})}" action="/todo/1/delete" method="post" class="d-inline"
+                              onsubmit="return confirm('本当に削除しますか？')">
                             <button type="submit" class="btn btn-danger btn-sm">削除</button>
                         </form>
                     </td>
