@@ -73,4 +73,10 @@ public class TodoController {
         }
         return "redirect:/todo";
     }
+
+    @PostMapping("/{id}/toggle")
+    public String toggle(@PathVariable("id") Long id) {
+        todoService.toggleCompleted(id);
+        return "redirect:/todo";
+    }
 }

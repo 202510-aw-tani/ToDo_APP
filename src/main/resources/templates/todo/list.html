@@ -47,9 +47,15 @@
                 <tbody>
                 <tr th:each="todo : ${todos}">
                     <td th:text="${todo.id}">1</td>
-                    <td th:text="${todo.title}">サンプルタスク</td>
+                    <td>
+                        <span th:text="${todo.title}" th:classappend="${todo.completed} ? 'text-decoration-line-through' : ''">サンプルタスク</span>
+                    </td>
                     <td th:text="${todo.completed} ? '完了' : '未完了'">未完了</td>
                     <td>
+                        <form th:action="@{/todo/{id}/toggle(id=${todo.id})}" action="/todo/1/toggle" method="post" class="d-inline me-2">
+                            <button type="submit" class="btn btn-outline-secondary btn-sm"
+                                    th:text="${todo.completed} ? '未完了に戻す' : '完了にする'">完了にする</button>
+                        </form>
                         <a class="btn btn-outline-primary btn-sm me-2"
                            th:href="@{/todo/{id}/edit(id=${todo.id})}" href="/todo/1/edit">編集</a>
                         <form th:action="@{/todo/{id}/delete(id=${todo.id})}" action="/todo/1/delete" method="post" class="d-inline"
