@@ -13,6 +13,13 @@
 </head>
 <body class="bg-light">
 <div class="container py-4">
+    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <span th:text="${successMessage}">ToDoを削除しました</span>
+    </div>
+    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <span th:text="${errorMessage}">削除に失敗しました</span>
+    </div>
+
     <div class="d-flex align-items-center justify-content-between mb-3">
         <h1 class="h3 mb-0">ToDo一覧</h1>
         <a class="btn btn-primary" href="/todo/new">新規登録</a>
@@ -54,5 +61,14 @@
         </div>
     </div>
 </div>
+<script>
+    window.setTimeout(() => {
+        document.querySelectorAll('.alert').forEach((alert) => {
+            alert.classList.remove('show');
+            alert.classList.add('fade');
+            window.setTimeout(() => alert.remove(), 200);
+        });
+    }, 3000);
+</script>
 </body>
 </html>

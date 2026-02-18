@@ -25,7 +25,7 @@ public class TodoService {
         return todoMapper.findAll();
     }
 
-    public void deleteById(Long id) {
-        todoMapper.deleteById(id);
+    public boolean deleteById(Long id) {
+        return todoMapper.deleteById(id) > 0;
     }
 }
