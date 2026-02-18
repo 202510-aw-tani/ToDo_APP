@@ -28,4 +28,8 @@ public class TodoService {
     public boolean deleteById(Long id) {
         return todoMapper.deleteById(id) > 0;
     }
+
+    public Todo findById(Long id) {
+        return todoMapper.findById(id);
+    }
 }

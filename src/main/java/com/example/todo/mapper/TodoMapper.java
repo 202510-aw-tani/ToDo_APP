@@ -10,4 +10,6 @@ public interface TodoMapper {
     int insert(Todo todo);
 
     int deleteById(Long id);
+
+    Todo findById(Long id);
 }
