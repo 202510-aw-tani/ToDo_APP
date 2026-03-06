@@ -17,6 +17,7 @@ import com.example.todo.service.CategoryService;
 import com.example.todo.model.Priority;
 import com.example.todo.model.Category;
 import java.time.LocalDate;
+import java.util.List;
 
 @Controller
 @RequestMapping("/todo")
@@ -39,7 +40,8 @@ public class TodoController {
         boolean sortByPriority = "priority".equalsIgnoreCase(sort);
         boolean sortByDeadline = "deadline".equalsIgnoreCase(sort);
         PageRequest pageable = PageRequest.of(page, size);
-        Page<com.example.todo.model.Todo> todoPage = todoService.findPage(pageable, sortByPriority, sortByDeadline, categoryId);
+        Page<com.example.todo.model.Todo> todoPage = todoService.findPage(pageable, sortByPriority, sortByDeadline,
+                categoryId);
         long total = todoPage.getTotalElements();
         int currentPage = todoPage.getNumber();
         long start = total == 0 ? 0 : (long) currentPage * size + 1;
@@ -92,6 +94,18 @@ public class TodoController {
             redirectAttributes.addFlashAttribute("successMessage", "ToDoを削除しました");
         } else {
             redirectAttributes.addFlashAttribute("errorMessage", "削除に失敗しました");
+        }
+        return "redirect:/todo";
+    }
+
+    @PostMapping("/bulk-delete")
+    public String bulkDelete(@RequestParam(name = "ids", required = false) List<Integer> ids,
+            RedirectAttributes redirectAttributes) {
+        int deleted = todoService.deleteByIds(ids);
+        if (deleted > 0) {
+            redirectAttributes.addFlashAttribute("successMessage", deleted + "件のToDoを削除しました");
+        } else {
+            redirectAttributes.addFlashAttribute("errorMessage", "削除対象が選択されていません");
         }
         return "redirect:/todo";
     }

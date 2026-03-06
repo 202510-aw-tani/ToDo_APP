@@ -21,6 +21,8 @@ public interface TodoMapper {
 
     int deleteById(Long id);
 
+    int deleteByIds(@Param("ids") List<Integer> ids);
+
     Todo findById(Long id);
 
     int update(Todo todo);

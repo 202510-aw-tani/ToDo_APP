@@ -59,10 +59,15 @@
     </div>
 
     <div th:unless="${todoPage.empty}" class="card shadow-sm">
+        <form th:action="@{/todo/bulk-delete}" action="/todo/bulk-delete" method="post"
+              onsubmit="return confirm('選択したToDoを削除しますか？');">
         <div class="card-body p-0">
             <table class="table table-striped mb-0">
                 <thead class="table-light">
                 <tr>
+                    <th style="width: 48px;">
+                        <input type="checkbox" id="selectAll">
+                    </th>
                     <th style="width: 80px;">ID</th>
                     <th>タイトル</th>
                     <th style="width: 120px;">優先度</th>
@@ -75,6 +80,9 @@
                 <tbody>
                 <tr th:each="todo : ${todoPage.content}"
                     th:classappend="${todo.overdue} ? 'overdue-row' : (${todo.nearDeadline} ? 'warning-row' : '')">
+                    <td>
+                        <input type="checkbox" class="row-check" name="ids" th:value="${todo.id}">
+                    </td>
                     <td th:text="${todo.id}">1</td>
                     <td>
                         <span th:text="${todo.title}" th:classappend="${todo.completed} ? 'text-decoration-line-through' : ''">サンプルタスク</span>
@@ -121,30 +129,51 @@
             <div class="text-muted small">
                 <span th:text="'全' + ${totalCount} + '件中 ' + ${rangeStart} + '-' + ${rangeEnd} + '件'">全0件中 0-0件</span>
             </div>
-            <nav aria-label="ToDo pagination">
-                <ul class="pagination mb-0">
-                    <li class="page-item" th:classappend="${todoPage.first} ? 'disabled' : ''">
-                        <a class="page-link"
-                           th:href="${todoPage.first} ? '#' : @{/todo(page=${todoPage.number - 1}, sort=${sort}, categoryId=${selectedCategoryId})}"
-                           aria-label="前へ">前へ</a>
-                    </li>
-                    <li class="page-item" th:each="pageNumber : ${pageNumbers}"
-                        th:classappend="${pageNumber == todoPage.number} ? 'active' : ''">
-                        <a class="page-link"
-                           th:href="@{/todo(page=${pageNumber}, sort=${sort}, categoryId=${selectedCategoryId})}"
-                           th:text="${pageNumber + 1}">1</a>
-                    </li>
-                    <li class="page-item" th:classappend="${todoPage.last} ? 'disabled' : ''">
-                        <a class="page-link"
-                           th:href="${todoPage.last} ? '#' : @{/todo(page=${todoPage.number + 1}, sort=${sort}, categoryId=${selectedCategoryId})}"
-                           aria-label="次へ">次へ</a>
-                    </li>
-                </ul>
-            </nav>
+            <div class="d-flex align-items-center gap-2">
+                <button type="submit" class="btn btn-danger btn-sm">選択した項目を削除</button>
+                <nav aria-label="ToDo pagination">
+                    <ul class="pagination mb-0">
+                        <li class="page-item" th:classappend="${todoPage.first} ? 'disabled' : ''">
+                            <a class="page-link"
+                               th:href="${todoPage.first} ? '#' : @{/todo(page=${todoPage.number - 1}, sort=${sort}, categoryId=${selectedCategoryId})}"
+                               aria-label="前へ">前へ</a>
+                        </li>
+                        <li class="page-item" th:each="pageNumber : ${pageNumbers}"
+                            th:classappend="${pageNumber == todoPage.number} ? 'active' : ''">
+                            <a class="page-link"
+                               th:href="@{/todo(page=${pageNumber}, sort=${sort}, categoryId=${selectedCategoryId})}"
+                               th:text="${pageNumber + 1}">1</a>
+                        </li>
+                        <li class="page-item" th:classappend="${todoPage.last} ? 'disabled' : ''">
+                            <a class="page-link"
+                               th:href="${todoPage.last} ? '#' : @{/todo(page=${todoPage.number + 1}, sort=${sort}, categoryId=${selectedCategoryId})}"
+                               aria-label="次へ">次へ</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
         </div>
+        </form>
     </div>
 </div>
 <script>
+    const selectAll = document.getElementById('selectAll');
+    if (selectAll) {
+        selectAll.addEventListener('change', () => {
+            document.querySelectorAll('.row-check').forEach((checkbox) => {
+                checkbox.checked = selectAll.checked;
+            });
+        });
+    }
+    document.querySelectorAll('.row-check').forEach((checkbox) => {
+        checkbox.addEventListener('change', () => {
+            const checks = document.querySelectorAll('.row-check');
+            const checked = document.querySelectorAll('.row-check:checked');
+            if (selectAll) {
+                selectAll.checked = checks.length > 0 && checks.length === checked.length;
+            }
+        });
+    });
     window.setTimeout(() => {
         document.querySelectorAll('.alert').forEach((alert) => {
             alert.classList.remove('show');
