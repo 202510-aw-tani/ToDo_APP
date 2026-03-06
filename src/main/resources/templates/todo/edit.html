@@ -49,6 +49,11 @@
                         </option>
                     </select>
                 </div>
+                <div class="mb-3">
+                    <label for="deadline" class="form-label">期限日</label>
+                    <input type="date" id="deadline" name="deadline" class="form-control"
+                           th:value="${todo.deadline}">
+                </div>
                 <div class="d-flex gap-2">
                     <button type="submit" class="btn btn-primary">更新</button>
                     <a class="btn btn-outline-secondary" href="/todo">戻る</a>

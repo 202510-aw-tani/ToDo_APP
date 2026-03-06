@@ -5,6 +5,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+
 import com.example.todo.mapper.TodoMapper;
 import com.example.todo.model.Priority;
 import com.example.todo.model.Todo;
@@ -18,12 +20,13 @@ public class TodoService {
         this.todoMapper = todoMapper;
     }
 
-    public void create(String title, Priority priority, Long categoryId) {
+    public void create(String title, Priority priority, Long categoryId, LocalDate deadline) {
         Todo todo = new Todo();
         todo.setTitle(title);
         todo.setCompleted(false);
         todo.setPriority(priority != null ? priority : Priority.MEDIUM);
         todo.setCategoryId(categoryId);
+        todo.setDeadline(deadline);
         todoMapper.insert(todo);
     }
 
@@ -31,10 +34,10 @@ public class TodoService {
         return todoMapper.findAll();
     }
 
-    public Page<Todo> findPage(Pageable pageable, boolean sortByPriority, Long categoryId) {
+    public Page<Todo> findPage(Pageable pageable, boolean sortByPriority, boolean sortByDeadline, Long categoryId) {
         int limit = pageable.getPageSize();
         int offset = (int) pageable.getOffset();
-        java.util.List<Todo> content = todoMapper.findPage(limit, offset, sortByPriority, categoryId);
+        java.util.List<Todo> content = todoMapper.findPage(limit, offset, sortByPriority, sortByDeadline, categoryId);
         long total = todoMapper.countAll(categoryId);
         return new PageImpl<>(content, pageable, total);
     }
@@ -47,13 +50,14 @@ public class TodoService {
         return todoMapper.findById(id);
     }
 
-    public boolean update(Long id, String title, Priority priority, Long categoryId) {
+    public boolean update(Long id, String title, Priority priority, Long categoryId, LocalDate deadline) {
         Todo todo = new Todo();
         todo.setId(id);
         todo.setTitle(title);
         todo.setCompleted(false);
         todo.setPriority(priority != null ? priority : Priority.MEDIUM);
         todo.setCategoryId(categoryId);
+        todo.setDeadline(deadline);
         return todoMapper.update(todo) > 0;
     }
 

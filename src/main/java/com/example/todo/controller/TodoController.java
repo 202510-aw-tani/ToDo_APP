@@ -10,11 +10,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import com.example.todo.service.TodoService;
 import com.example.todo.service.CategoryService;
 import com.example.todo.model.Priority;
 import com.example.todo.model.Category;
+import java.time.LocalDate;
 
 @Controller
 @RequestMapping("/todo")
@@ -35,19 +37,19 @@ public class TodoController {
             Model model) {
         int size = 10;
         boolean sortByPriority = "priority".equalsIgnoreCase(sort);
+        boolean sortByDeadline = "deadline".equalsIgnoreCase(sort);
         PageRequest pageable = PageRequest.of(page, size);
-        Page<com.example.todo.model.Todo> todoPage = todoService.findPage(pageable, sortByPriority, categoryId);
+        Page<com.example.todo.model.Todo> todoPage = todoService.findPage(pageable, sortByPriority, sortByDeadline, categoryId);
         long total = todoPage.getTotalElements();
         int currentPage = todoPage.getNumber();
         long start = total == 0 ? 0 : (long) currentPage * size + 1;
         long end = Math.min((long) (currentPage + 1) * size, total);
-
         model.addAttribute("todoPage", todoPage);
         model.addAttribute("pageNumbers", java.util.stream.IntStream.range(0, todoPage.getTotalPages()).toArray());
         model.addAttribute("totalCount", total);
         model.addAttribute("rangeStart", start);
         model.addAttribute("rangeEnd", end);
-        model.addAttribute("sort", sortByPriority ? "priority" : "id");
+        model.addAttribute("sort", sortByDeadline ? "deadline" : (sortByPriority ? "priority" : "id"));
         model.addAttribute("categories", categoryService.findAll());
         model.addAttribute("selectedCategoryId", categoryId);
         return "todo/list";
@@ -63,20 +65,23 @@ public class TodoController {
     public String confirm(@RequestParam("title") String title,
             @RequestParam(name = "priority", defaultValue = "MEDIUM") Priority priority,
             @RequestParam(name = "categoryId", required = false) Long categoryId,
+            @RequestParam(name = "deadline", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate deadline,
             Model model) {
         model.addAttribute("title", title);
         model.addAttribute("priority", priority);
         Category category = categoryId != null ? categoryService.findById(categoryId) : null;
         model.addAttribute("category", category);
         model.addAttribute("categoryId", categoryId);
+        model.addAttribute("deadline", deadline);
         return "todo/confirm";
     }
 
     @PostMapping("/complete")
     public String complete(@RequestParam("title") String title,
             @RequestParam(name = "priority", defaultValue = "MEDIUM") Priority priority,
-            @RequestParam(name = "categoryId", required = false) Long categoryId) {
-        todoService.create(title, priority, categoryId);
+            @RequestParam(name = "categoryId", required = false) Long categoryId,
+            @RequestParam(name = "deadline", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate deadline) {
+        todoService.create(title, priority, categoryId, deadline);
         return "redirect:/todo";
     }
 
@@ -103,8 +108,9 @@ public class TodoController {
             @RequestParam("title") String title,
             @RequestParam(name = "priority", defaultValue = "MEDIUM") Priority priority,
             @RequestParam(name = "categoryId", required = false) Long categoryId,
+            @RequestParam(name = "deadline", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate deadline,
             RedirectAttributes redirectAttributes) {
-        boolean updated = todoService.update(id, title, priority, categoryId);
+        boolean updated = todoService.update(id, title, priority, categoryId, deadline);
         if (updated) {
             redirectAttributes.addFlashAttribute("successMessage", "更新が完了しました");
         } else {

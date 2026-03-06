@@ -33,6 +33,12 @@
                        th:value="${category != null} ? ${category.name} : '未選択'"
                        value="未選択" readonly>
                 <input type="hidden" name="categoryId" th:value="${categoryId}">
+
+                <h2 class="h6 text-muted mt-3 mb-2">期限日</h2>
+                <input type="text" class="form-control"
+                       th:value="${deadline != null} ? ${#temporals.format(deadline, 'yyyy-MM-dd')} : '未設定'"
+                       value="未設定" readonly>
+                <input type="hidden" name="deadline" th:value="${deadline}">
             </div>
         </div>
 

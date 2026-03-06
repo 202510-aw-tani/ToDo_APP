@@ -29,6 +29,9 @@
             <a class="btn btn-outline-secondary"
                th:classappend="${sort == 'priority'} ? 'active' : ''"
                th:href="@{/todo(sort='priority', categoryId=${selectedCategoryId})}" href="/todo?sort=priority">優先度順</a>
+            <a class="btn btn-outline-secondary"
+               th:classappend="${sort == 'deadline'} ? 'active' : ''"
+               th:href="@{/todo(sort='deadline', categoryId=${selectedCategoryId})}" href="/todo?sort=deadline">期限日順</a>
             <form class="d-flex align-items-center gap-2" th:action="@{/todo}" action="/todo" method="get">
                 <input type="hidden" name="sort" th:value="${sort}">
                 <select class="form-select" name="categoryId" style="min-width: 160px;">
@@ -64,12 +67,14 @@
                     <th>タイトル</th>
                     <th style="width: 120px;">優先度</th>
                     <th style="width: 140px;">カテゴリ</th>
+                    <th style="width: 140px;">期限日</th>
                     <th style="width: 120px;">完了状態</th>
                     <th style="width: 120px;">操作</th>
                 </tr>
                 </thead>
                 <tbody>
-                <tr th:each="todo : ${todoPage.content}">
+                <tr th:each="todo : ${todoPage.content}"
+                    th:classappend="${todo.overdue} ? 'overdue-row' : (${todo.nearDeadline} ? 'warning-row' : '')">
                     <td th:text="${todo.id}">1</td>
                     <td>
                         <span th:text="${todo.title}" th:classappend="${todo.completed} ? 'text-decoration-line-through' : ''">サンプルタスク</span>
@@ -85,6 +90,15 @@
                               th:style="'background-color:' + ${todo.category.color}"
                               th:text="${todo.category.name}">カテゴリ</span>
                         <span th:if="${todo.category == null}" class="text-muted">未選択</span>
+                    </td>
+                    <td>
+                        <div th:text="${todo.deadline != null} ? ${#temporals.format(todo.deadline, 'yyyy-MM-dd')} : '-'">-</div>
+                        <div class="small">
+                            <span th:if="${todo.overdue}" class="text-danger">期限切れ</span>
+                            <span th:if="${!todo.overdue and todo.nearDeadline}"
+                                  class="text-warning-emphasis"
+                                  th:text="'あと' + ${todo.daysUntilDeadline} + '日'">あと3日</span>
+                        </div>
                     </td>
                     <td th:text="${todo.completed} ? '完了' : '未完了'">未完了</td>
                     <td>
@@ -139,5 +153,13 @@
         });
     }, 3000);
 </script>
+<style>
+    .overdue-row {
+        background-color: #f8d7da;
+    }
+    .warning-row {
+        background-color: #fff3cd;
+    }
+</style>
 </body>
 </html>

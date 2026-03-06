@@ -12,6 +12,7 @@ public interface TodoMapper {
     List<Todo> findPage(@Param("limit") int limit,
             @Param("offset") int offset,
             @Param("sortByPriority") boolean sortByPriority,
+            @Param("sortByDeadline") boolean sortByDeadline,
             @Param("categoryId") Long categoryId);
 
     long countAll(@Param("categoryId") Long categoryId);
