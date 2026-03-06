@@ -12,26 +12,31 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.todo.service.TodoService;
+import com.example.todo.service.CategoryService;
 import com.example.todo.model.Priority;
+import com.example.todo.model.Category;
 
 @Controller
 @RequestMapping("/todo")
 public class TodoController {
 
     private final TodoService todoService;
+    private final CategoryService categoryService;
 
-    public TodoController(TodoService todoService) {
+    public TodoController(TodoService todoService, CategoryService categoryService) {
         this.todoService = todoService;
+        this.categoryService = categoryService;
     }
 
     @GetMapping
     public String list(@RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "sort", defaultValue = "id") String sort,
+            @RequestParam(name = "categoryId", required = false) Long categoryId,
             Model model) {
         int size = 10;
         boolean sortByPriority = "priority".equalsIgnoreCase(sort);
         PageRequest pageable = PageRequest.of(page, size);
-        Page<com.example.todo.model.Todo> todoPage = todoService.findPage(pageable, sortByPriority);
+        Page<com.example.todo.model.Todo> todoPage = todoService.findPage(pageable, sortByPriority, categoryId);
         long total = todoPage.getTotalElements();
         int currentPage = todoPage.getNumber();
         long start = total == 0 ? 0 : (long) currentPage * size + 1;
@@ -43,27 +48,35 @@ public class TodoController {
         model.addAttribute("rangeStart", start);
         model.addAttribute("rangeEnd", end);
         model.addAttribute("sort", sortByPriority ? "priority" : "id");
+        model.addAttribute("categories", categoryService.findAll());
+        model.addAttribute("selectedCategoryId", categoryId);
         return "todo/list";
     }
 
     @GetMapping("/new")
-    public String newTodo() {
+    public String newTodo(Model model) {
+        model.addAttribute("categories", categoryService.findAll());
         return "todo/form";
     }
 
     @PostMapping("/confirm")
     public String confirm(@RequestParam("title") String title,
             @RequestParam(name = "priority", defaultValue = "MEDIUM") Priority priority,
+            @RequestParam(name = "categoryId", required = false) Long categoryId,
             Model model) {
         model.addAttribute("title", title);
         model.addAttribute("priority", priority);
+        Category category = categoryId != null ? categoryService.findById(categoryId) : null;
+        model.addAttribute("category", category);
+        model.addAttribute("categoryId", categoryId);
         return "todo/confirm";
     }
 
     @PostMapping("/complete")
     public String complete(@RequestParam("title") String title,
-            @RequestParam(name = "priority", defaultValue = "MEDIUM") Priority priority) {
-        todoService.create(title, priority);
+            @RequestParam(name = "priority", defaultValue = "MEDIUM") Priority priority,
+            @RequestParam(name = "categoryId", required = false) Long categoryId) {
+        todoService.create(title, priority, categoryId);
         return "redirect:/todo";
     }
 
@@ -81,6 +94,7 @@ public class TodoController {
     @GetMapping("/{id}/edit")
     public String edit(@PathVariable("id") Long id, Model model) {
         model.addAttribute("todo", todoService.findById(id));
+        model.addAttribute("categories", categoryService.findAll());
         return "todo/edit";
     }
 
@@ -88,8 +102,9 @@ public class TodoController {
     public String update(@PathVariable("id") Long id,
             @RequestParam("title") String title,
             @RequestParam(name = "priority", defaultValue = "MEDIUM") Priority priority,
+            @RequestParam(name = "categoryId", required = false) Long categoryId,
             RedirectAttributes redirectAttributes) {
-        boolean updated = todoService.update(id, title, priority);
+        boolean updated = todoService.update(id, title, priority, categoryId);
         if (updated) {
             redirectAttributes.addFlashAttribute("successMessage", "更新が完了しました");
         } else {

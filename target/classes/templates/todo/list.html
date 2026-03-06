@@ -22,13 +22,27 @@
 
     <div class="d-flex align-items-center justify-content-between mb-3">
         <h1 class="h3 mb-0">ToDo一覧</h1>
-        <div class="d-flex align-items-center gap-2">
+        <div class="d-flex align-items-center gap-2 flex-wrap justify-content-end">
             <a class="btn btn-outline-secondary"
                th:classappend="${sort == 'id'} ? 'active' : ''"
-               th:href="@{/todo(sort='id')}" href="/todo?sort=id">ID順</a>
+               th:href="@{/todo(sort='id', categoryId=${selectedCategoryId})}" href="/todo?sort=id">ID順</a>
             <a class="btn btn-outline-secondary"
                th:classappend="${sort == 'priority'} ? 'active' : ''"
-               th:href="@{/todo(sort='priority')}" href="/todo?sort=priority">優先度順</a>
+               th:href="@{/todo(sort='priority', categoryId=${selectedCategoryId})}" href="/todo?sort=priority">優先度順</a>
+            <form class="d-flex align-items-center gap-2" th:action="@{/todo}" action="/todo" method="get">
+                <input type="hidden" name="sort" th:value="${sort}">
+                <select class="form-select" name="categoryId" style="min-width: 160px;">
+                    <option value="">全カテゴリ</option>
+                    <option th:each="category : ${categories}"
+                            th:value="${category.id}"
+                            th:text="${category.name}"
+                            th:selected="${category.id == selectedCategoryId}">
+                        カテゴリ
+                    </option>
+                </select>
+                <button type="submit" class="btn btn-outline-secondary">絞り込み</button>
+                <a class="btn btn-outline-secondary" th:href="@{/todo(sort=${sort})}" href="/todo">リセット</a>
+            </form>
             <a class="btn btn-primary" href="/todo/new">新規登録</a>
         </div>
     </div>
@@ -49,6 +63,7 @@
                     <th style="width: 80px;">ID</th>
                     <th>タイトル</th>
                     <th style="width: 120px;">優先度</th>
+                    <th style="width: 140px;">カテゴリ</th>
                     <th style="width: 120px;">完了状態</th>
                     <th style="width: 120px;">操作</th>
                 </tr>
@@ -63,6 +78,13 @@
                         <span class="badge"
                               th:classappend="${todo.priority.badgeClass}"
                               th:text="${todo.priority.label}">中</span>
+                    </td>
+                    <td>
+                        <span th:if="${todo.category != null}"
+                              class="badge text-white"
+                              th:style="'background-color:' + ${todo.category.color}"
+                              th:text="${todo.category.name}">カテゴリ</span>
+                        <span th:if="${todo.category == null}" class="text-muted">未選択</span>
                     </td>
                     <td th:text="${todo.completed} ? '完了' : '未完了'">未完了</td>
                     <td>
@@ -89,18 +111,18 @@
                 <ul class="pagination mb-0">
                     <li class="page-item" th:classappend="${todoPage.first} ? 'disabled' : ''">
                         <a class="page-link"
-                           th:href="${todoPage.first} ? '#' : @{/todo(page=${todoPage.number - 1}, sort=${sort})}"
+                           th:href="${todoPage.first} ? '#' : @{/todo(page=${todoPage.number - 1}, sort=${sort}, categoryId=${selectedCategoryId})}"
                            aria-label="前へ">前へ</a>
                     </li>
                     <li class="page-item" th:each="pageNumber : ${pageNumbers}"
                         th:classappend="${pageNumber == todoPage.number} ? 'active' : ''">
                         <a class="page-link"
-                           th:href="@{/todo(page=${pageNumber}, sort=${sort})}"
+                           th:href="@{/todo(page=${pageNumber}, sort=${sort}, categoryId=${selectedCategoryId})}"
                            th:text="${pageNumber + 1}">1</a>
                     </li>
                     <li class="page-item" th:classappend="${todoPage.last} ? 'disabled' : ''">
                         <a class="page-link"
-                           th:href="${todoPage.last} ? '#' : @{/todo(page=${todoPage.number + 1}, sort=${sort})}"
+                           th:href="${todoPage.last} ? '#' : @{/todo(page=${todoPage.number + 1}, sort=${sort}, categoryId=${selectedCategoryId})}"
                            aria-label="次へ">次へ</a>
                     </li>
                 </ul>

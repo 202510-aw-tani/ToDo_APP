@@ -36,6 +36,17 @@
                         </option>
                     </select>
                 </div>
+                <div class="mb-3">
+                    <label for="categoryId" class="form-label">カテゴリ</label>
+                    <select id="categoryId" name="categoryId" class="form-select">
+                        <option value="">未選択</option>
+                        <option th:each="category : ${categories}"
+                                th:value="${category.id}"
+                                th:text="${category.name}">
+                            カテゴリ
+                        </option>
+                    </select>
+                </div>
                 <div class="d-flex gap-2">
                     <button type="submit" class="btn btn-primary">確認画面へ</button>
                     <a class="btn btn-outline-secondary" href="/todo">戻る</a>

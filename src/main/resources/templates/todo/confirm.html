@@ -27,6 +27,12 @@
                 <h2 class="h6 text-muted mt-3 mb-2">優先度</h2>
                 <input type="text" class="form-control" th:value="${priority.label}" value="中" readonly>
                 <input type="hidden" name="priority" th:value="${priority}">
+
+                <h2 class="h6 text-muted mt-3 mb-2">カテゴリ</h2>
+                <input type="text" class="form-control"
+                       th:value="${category != null} ? ${category.name} : '未選択'"
+                       value="未選択" readonly>
+                <input type="hidden" name="categoryId" th:value="${categoryId}">
             </div>
         </div>
 
