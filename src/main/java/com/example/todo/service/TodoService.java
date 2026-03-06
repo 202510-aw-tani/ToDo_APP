@@ -1,5 +1,8 @@
 package com.example.todo.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.example.todo.mapper.TodoMapper;
@@ -23,6 +26,14 @@ public class TodoService {
 
     public java.util.List<Todo> findAll() {
         return todoMapper.findAll();
+    }
+
+    public Page<Todo> findPage(Pageable pageable) {
+        int limit = pageable.getPageSize();
+        int offset = (int) pageable.getOffset();
+        java.util.List<Todo> content = todoMapper.findPage(limit, offset);
+        long total = todoMapper.countAll();
+        return new PageImpl<>(content, pageable, total);
     }
 
     public boolean deleteById(Long id) {

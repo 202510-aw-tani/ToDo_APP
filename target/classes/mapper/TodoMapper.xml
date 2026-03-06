@@ -10,6 +10,18 @@
         ORDER BY id
     </select>
 
+    <select id="findPage" resultType="com.example.todo.model.Todo">
+        SELECT id, title, completed
+        FROM todos
+        ORDER BY id
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countAll" resultType="long">
+        SELECT COUNT(*)
+        FROM todos
+    </select>
+
     <select id="findById" parameterType="long" resultType="com.example.todo.model.Todo">
         SELECT id, title, completed
         FROM todos

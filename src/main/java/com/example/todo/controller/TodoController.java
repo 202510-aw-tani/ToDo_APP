@@ -1,6 +1,8 @@
-﻿package com.example.todo.controller;
+package com.example.todo.controller;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,8 +24,20 @@ public class TodoController {
     }
 
     @GetMapping
-    public String list(Model model) {
-        model.addAttribute("todos", todoService.findAll());
+    public String list(@RequestParam(name = "page", defaultValue = "0") int page, Model model) {
+        int size = 10;
+        PageRequest pageable = PageRequest.of(page, size);
+        Page<com.example.todo.model.Todo> todoPage = todoService.findPage(pageable);
+        long total = todoPage.getTotalElements();
+        int currentPage = todoPage.getNumber();
+        long start = total == 0 ? 0 : (long) currentPage * size + 1;
+        long end = Math.min((long) (currentPage + 1) * size, total);
+
+        model.addAttribute("todoPage", todoPage);
+        model.addAttribute("pageNumbers", java.util.stream.IntStream.range(0, todoPage.getTotalPages()).toArray());
+        model.addAttribute("totalCount", total);
+        model.addAttribute("rangeStart", start);
+        model.addAttribute("rangeEnd", end);
         return "todo/list";
     }
 
@@ -63,8 +77,8 @@ public class TodoController {
 
     @PostMapping("/{id}/update")
     public String update(@PathVariable("id") Long id,
-                         @RequestParam("title") String title,
-                         RedirectAttributes redirectAttributes) {
+            @RequestParam("title") String title,
+            RedirectAttributes redirectAttributes) {
         boolean updated = todoService.update(id, title);
         if (updated) {
             redirectAttributes.addFlashAttribute("successMessage", "更新が完了しました");
