@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.example.todo.mapper.TodoMapper;
+import com.example.todo.model.Priority;
 import com.example.todo.model.Todo;
 
 @Service
@@ -17,10 +18,11 @@ public class TodoService {
         this.todoMapper = todoMapper;
     }
 
-    public void create(String title) {
+    public void create(String title, Priority priority) {
         Todo todo = new Todo();
         todo.setTitle(title);
         todo.setCompleted(false);
+        todo.setPriority(priority != null ? priority : Priority.MEDIUM);
         todoMapper.insert(todo);
     }
 
@@ -28,10 +30,10 @@ public class TodoService {
         return todoMapper.findAll();
     }
 
-    public Page<Todo> findPage(Pageable pageable) {
+    public Page<Todo> findPage(Pageable pageable, boolean sortByPriority) {
         int limit = pageable.getPageSize();
         int offset = (int) pageable.getOffset();
-        java.util.List<Todo> content = todoMapper.findPage(limit, offset);
+        java.util.List<Todo> content = todoMapper.findPage(limit, offset, sortByPriority);
         long total = todoMapper.countAll();
         return new PageImpl<>(content, pageable, total);
     }
@@ -44,11 +46,12 @@ public class TodoService {
         return todoMapper.findById(id);
     }
 
-    public boolean update(Long id, String title) {
+    public boolean update(Long id, String title, Priority priority) {
         Todo todo = new Todo();
         todo.setId(id);
         todo.setTitle(title);
         todo.setCompleted(false);
+        todo.setPriority(priority != null ? priority : Priority.MEDIUM);
         return todoMapper.update(todo) > 0;
     }
 

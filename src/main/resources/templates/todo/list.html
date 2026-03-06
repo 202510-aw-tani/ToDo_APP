@@ -22,7 +22,15 @@
 
     <div class="d-flex align-items-center justify-content-between mb-3">
         <h1 class="h3 mb-0">ToDo一覧</h1>
-        <a class="btn btn-primary" href="/todo/new">新規登録</a>
+        <div class="d-flex align-items-center gap-2">
+            <a class="btn btn-outline-secondary"
+               th:classappend="${sort == 'id'} ? 'active' : ''"
+               th:href="@{/todo(sort='id')}" href="/todo?sort=id">ID順</a>
+            <a class="btn btn-outline-secondary"
+               th:classappend="${sort == 'priority'} ? 'active' : ''"
+               th:href="@{/todo(sort='priority')}" href="/todo?sort=priority">優先度順</a>
+            <a class="btn btn-primary" href="/todo/new">新規登録</a>
+        </div>
     </div>
 
     <div th:if="${todoPage.empty}" class="card shadow-sm">
@@ -40,6 +48,7 @@
                 <tr>
                     <th style="width: 80px;">ID</th>
                     <th>タイトル</th>
+                    <th style="width: 120px;">優先度</th>
                     <th style="width: 120px;">完了状態</th>
                     <th style="width: 120px;">操作</th>
                 </tr>
@@ -49,6 +58,11 @@
                     <td th:text="${todo.id}">1</td>
                     <td>
                         <span th:text="${todo.title}" th:classappend="${todo.completed} ? 'text-decoration-line-through' : ''">サンプルタスク</span>
+                    </td>
+                    <td>
+                        <span class="badge"
+                              th:classappend="${todo.priority.badgeClass}"
+                              th:text="${todo.priority.label}">中</span>
                     </td>
                     <td th:text="${todo.completed} ? '完了' : '未完了'">未完了</td>
                     <td>
@@ -75,18 +89,18 @@
                 <ul class="pagination mb-0">
                     <li class="page-item" th:classappend="${todoPage.first} ? 'disabled' : ''">
                         <a class="page-link"
-                           th:href="${todoPage.first} ? '#' : @{/todo(page=${todoPage.number - 1})}"
+                           th:href="${todoPage.first} ? '#' : @{/todo(page=${todoPage.number - 1}, sort=${sort})}"
                            aria-label="前へ">前へ</a>
                     </li>
                     <li class="page-item" th:each="pageNumber : ${pageNumbers}"
                         th:classappend="${pageNumber == todoPage.number} ? 'active' : ''">
                         <a class="page-link"
-                           th:href="@{/todo(page=${pageNumber})}"
+                           th:href="@{/todo(page=${pageNumber}, sort=${sort})}"
                            th:text="${pageNumber + 1}">1</a>
                     </li>
                     <li class="page-item" th:classappend="${todoPage.last} ? 'disabled' : ''">
                         <a class="page-link"
-                           th:href="${todoPage.last} ? '#' : @{/todo(page=${todoPage.number + 1})}"
+                           th:href="${todoPage.last} ? '#' : @{/todo(page=${todoPage.number + 1}, sort=${sort})}"
                            aria-label="次へ">次へ</a>
                     </li>
                 </ul>

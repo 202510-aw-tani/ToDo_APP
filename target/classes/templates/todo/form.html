@@ -25,6 +25,17 @@
                     <label for="title" class="form-label">タイトル</label>
                     <input type="text" id="title" name="title" class="form-control" placeholder="例: 買い物に行く">
                 </div>
+                <div class="mb-3">
+                    <label for="priority" class="form-label">優先度</label>
+                    <select id="priority" name="priority" class="form-select">
+                        <option th:each="p : ${T(com.example.todo.model.Priority).values()}"
+                                th:value="${p}"
+                                th:text="${p.label}"
+                                th:selected="${p == T(com.example.todo.model.Priority).MEDIUM}">
+                            中
+                        </option>
+                    </select>
+                </div>
                 <div class="d-flex gap-2">
                     <button type="submit" class="btn btn-primary">確認画面へ</button>
                     <a class="btn btn-outline-secondary" href="/todo">戻る</a>

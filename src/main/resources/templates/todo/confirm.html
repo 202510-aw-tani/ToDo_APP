@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ja" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
@@ -23,6 +23,10 @@
                 <h2 class="h6 text-muted mb-2">タイトル</h2>
                 <input type="text" class="form-control" th:value="${title}" value="サンプルタスク" readonly>
                 <input type="hidden" name="title" th:value="${title}">
+
+                <h2 class="h6 text-muted mt-3 mb-2">優先度</h2>
+                <input type="text" class="form-control" th:value="${priority.label}" value="中" readonly>
+                <input type="hidden" name="priority" th:value="${priority}">
             </div>
         </div>
 

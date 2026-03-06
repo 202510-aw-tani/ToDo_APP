@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ja" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
@@ -25,6 +25,17 @@
                     <label for="title" class="form-label">タイトル</label>
                     <input type="text" id="title" name="title" class="form-control"
                            th:value="${todo.title}" value="サンプルタスク">
+                </div>
+                <div class="mb-3">
+                    <label for="priority" class="form-label">優先度</label>
+                    <select id="priority" name="priority" class="form-select">
+                        <option th:each="p : ${T(com.example.todo.model.Priority).values()}"
+                                th:value="${p}"
+                                th:text="${p.label}"
+                                th:selected="${p == todo.priority}">
+                            中
+                        </option>
+                    </select>
                 </div>
                 <div class="d-flex gap-2">
                     <button type="submit" class="btn btn-primary">更新</button>

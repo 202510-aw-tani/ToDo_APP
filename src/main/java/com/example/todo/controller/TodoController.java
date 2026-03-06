@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.todo.service.TodoService;
+import com.example.todo.model.Priority;
 
 @Controller
 @RequestMapping("/todo")
@@ -24,10 +25,13 @@ public class TodoController {
     }
 
     @GetMapping
-    public String list(@RequestParam(name = "page", defaultValue = "0") int page, Model model) {
+    public String list(@RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "sort", defaultValue = "id") String sort,
+            Model model) {
         int size = 10;
+        boolean sortByPriority = "priority".equalsIgnoreCase(sort);
         PageRequest pageable = PageRequest.of(page, size);
-        Page<com.example.todo.model.Todo> todoPage = todoService.findPage(pageable);
+        Page<com.example.todo.model.Todo> todoPage = todoService.findPage(pageable, sortByPriority);
         long total = todoPage.getTotalElements();
         int currentPage = todoPage.getNumber();
         long start = total == 0 ? 0 : (long) currentPage * size + 1;
@@ -38,6 +42,7 @@ public class TodoController {
         model.addAttribute("totalCount", total);
         model.addAttribute("rangeStart", start);
         model.addAttribute("rangeEnd", end);
+        model.addAttribute("sort", sortByPriority ? "priority" : "id");
         return "todo/list";
     }
 
@@ -47,14 +52,18 @@ public class TodoController {
     }
 
     @PostMapping("/confirm")
-    public String confirm(@RequestParam("title") String title, Model model) {
+    public String confirm(@RequestParam("title") String title,
+            @RequestParam(name = "priority", defaultValue = "MEDIUM") Priority priority,
+            Model model) {
         model.addAttribute("title", title);
+        model.addAttribute("priority", priority);
         return "todo/confirm";
     }
 
     @PostMapping("/complete")
-    public String complete(@RequestParam("title") String title) {
-        todoService.create(title);
+    public String complete(@RequestParam("title") String title,
+            @RequestParam(name = "priority", defaultValue = "MEDIUM") Priority priority) {
+        todoService.create(title, priority);
         return "redirect:/todo";
     }
 
@@ -78,8 +87,9 @@ public class TodoController {
     @PostMapping("/{id}/update")
     public String update(@PathVariable("id") Long id,
             @RequestParam("title") String title,
+            @RequestParam(name = "priority", defaultValue = "MEDIUM") Priority priority,
             RedirectAttributes redirectAttributes) {
-        boolean updated = todoService.update(id, title);
+        boolean updated = todoService.update(id, title, priority);
         if (updated) {
             redirectAttributes.addFlashAttribute("successMessage", "更新が完了しました");
         } else {

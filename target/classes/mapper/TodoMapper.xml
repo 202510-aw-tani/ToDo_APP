@@ -5,15 +5,27 @@
 <mapper namespace="com.example.todo.mapper.TodoMapper">
 
     <select id="findAll" resultType="com.example.todo.model.Todo">
-        SELECT id, title, completed
+        SELECT id, title, completed, priority
         FROM todos
         ORDER BY id
     </select>
 
     <select id="findPage" resultType="com.example.todo.model.Todo">
-        SELECT id, title, completed
+        SELECT id, title, completed, priority
         FROM todos
-        ORDER BY id
+        ORDER BY
+        <choose>
+            <when test="sortByPriority">
+                CASE priority
+                    WHEN 'HIGH' THEN 1
+                    WHEN 'MEDIUM' THEN 2
+                    WHEN 'LOW' THEN 3
+                    ELSE 2
+                END,
+                id
+            </when>
+            <otherwise>id</otherwise>
+        </choose>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 
@@ -23,15 +35,15 @@
     </select>
 
     <select id="findById" parameterType="long" resultType="com.example.todo.model.Todo">
-        SELECT id, title, completed
+        SELECT id, title, completed, priority
         FROM todos
         WHERE id = #{id}
     </select>
 
     <insert id="insert" parameterType="com.example.todo.model.Todo"
             useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO todos (title, completed)
-        VALUES (#{title}, #{completed})
+        INSERT INTO todos (title, completed, priority)
+        VALUES (#{title}, #{completed}, #{priority})
     </insert>
 
     <delete id="deleteById" parameterType="long">
@@ -42,7 +54,8 @@
     <update id="update" parameterType="com.example.todo.model.Todo">
         UPDATE todos
         SET title = #{title},
-            completed = #{completed}
+            completed = #{completed},
+            priority = #{priority}
         WHERE id = #{id}
     </update>
 

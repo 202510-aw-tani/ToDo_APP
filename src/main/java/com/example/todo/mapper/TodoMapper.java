@@ -9,7 +9,9 @@ import com.example.todo.model.Todo;
 public interface TodoMapper {
     List<Todo> findAll();
 
-    List<Todo> findPage(@Param("limit") int limit, @Param("offset") int offset);
+    List<Todo> findPage(@Param("limit") int limit,
+            @Param("offset") int offset,
+            @Param("sortByPriority") boolean sortByPriority);
 
     long countAll();
 
