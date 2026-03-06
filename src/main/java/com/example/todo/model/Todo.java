@@ -13,6 +13,8 @@ public class Todo {
     private Long categoryId;
     private Category category;
     private LocalDate deadline;
+    private String createdBy;
+    private LocalDate createdAt;
 
     public boolean isOverdue() {
         return deadline != null && deadline.isBefore(LocalDate.now());

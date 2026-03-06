@@ -18,6 +18,11 @@ import com.example.todo.model.Priority;
 import com.example.todo.model.Category;
 import java.time.LocalDate;
 import java.util.List;
+import java.time.format.DateTimeFormatter;
+import java.nio.charset.StandardCharsets;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 
 @Controller
 @RequestMapping("/todo")
@@ -110,9 +115,51 @@ public class TodoController {
         return "redirect:/todo";
     }
 
-    @GetMapping("/{id}/edit")
-    public String edit(@PathVariable("id") Long id, Model model) {
-        model.addAttribute("todo", todoService.findById(id));
+    @GetMapping("/export")
+    public ResponseEntity<byte[]> exportCsv() {
+        String csv = buildCsv(todoService.findAll());
+        byte[] bom = new byte[] { (byte) 0xEF, (byte) 0xBB, (byte) 0xBF };
+        byte[] body = csv.getBytes(StandardCharsets.UTF_8);
+        byte[] data = new byte[bom.length + body.length];
+        System.arraycopy(bom, 0, data, 0, bom.length);
+        System.arraycopy(body, 0, data, bom.length, body.length);
+
+        String filename = "todo_" + LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE) + ".csv";
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(new MediaType("text", "csv", StandardCharsets.UTF_8));
+        headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"");
+        return ResponseEntity.ok().headers(headers).body(data);
+    }
+
+    private String buildCsv(List<com.example.todo.model.Todo> todos) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("ID,タイトル,登録者,ステータス,作成日").append("\r\n");
+        for (com.example.todo.model.Todo todo : todos) {
+            String status = Boolean.TRUE.equals(todo.getCompleted()) ? "完了" : "未完了";
+            String createdAt = todo.getCreatedAt() != null ? todo.getCreatedAt().toString() : "";
+            sb.append(escapeCsv(String.valueOf(todo.getId()))).append(',')
+                    .append(escapeCsv(todo.getTitle())).append(',')
+                    .append(escapeCsv(todo.getCreatedBy())).append(',')
+                    .append(escapeCsv(status)).append(',')
+                    .append(escapeCsv(createdAt)).append("\r\n");
+        }
+        return sb.toString();
+    }
+
+    private String escapeCsv(String value) {
+        if (value == null) {
+            return "";
+        }
+        boolean needsQuote = value.contains(",") || value.contains("\"") || value.contains("\n")
+                || value.contains("\r");
+        String escaped = value.replace("\"", "\"\"");
+        return needsQuote ? "\"" + escaped + "\"" : escaped;
+        
+    
+
+    
+        ing("/{id}/edit")
+    imodel.ddAttribute("todo", todoService.findById(id));
         model.addAttribute("categories", categoryService.findAll());
         return "todo/edit";
     }
@@ -138,4 +185,8 @@ public class TodoController {
         todoService.toggleCompleted(id);
         return "redirect:/todo";
     }
-}
+                    
+                    
+                    
+                    
+                

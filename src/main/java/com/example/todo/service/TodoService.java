@@ -27,6 +27,8 @@ public class TodoService {
         todo.setPriority(priority != null ? priority : Priority.MEDIUM);
         todo.setCategoryId(categoryId);
         todo.setDeadline(deadline);
+        todo.setCreatedBy("system");
+        todo.setCreatedAt(LocalDate.now());
         todoMapper.insert(todo);
     }
 

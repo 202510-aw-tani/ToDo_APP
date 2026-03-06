@@ -10,6 +10,8 @@
         <result property="completed" column="completed" />
         <result property="priority" column="priority" />
         <result property="deadline" column="deadline" />
+        <result property="createdBy" column="created_by" />
+        <result property="createdAt" column="created_at" />
         <result property="categoryId" column="category_id" />
         <association property="category" javaType="com.example.todo.model.Category">
             <id property="id" column="category_id" />
@@ -20,7 +22,7 @@
 
     <select id="findAll" resultMap="TodoResultMap">
         SELECT
-            t.id, t.title, t.completed, t.priority, t.deadline, t.category_id,
+            t.id, t.title, t.completed, t.priority, t.deadline, t.category_id, t.created_by, t.created_at,
             c.name AS category_name, c.color AS category_color
         FROM todos t
         LEFT JOIN categories c ON t.category_id = c.id
@@ -29,7 +31,7 @@
 
     <select id="findPage" resultMap="TodoResultMap">
         SELECT
-            t.id, t.title, t.completed, t.priority, t.deadline, t.category_id,
+            t.id, t.title, t.completed, t.priority, t.deadline, t.category_id, t.created_by, t.created_at,
             c.name AS category_name, c.color AS category_color
         FROM todos t
         LEFT JOIN categories c ON t.category_id = c.id
@@ -71,7 +73,7 @@
 
     <select id="findById" parameterType="long" resultMap="TodoResultMap">
         SELECT
-            t.id, t.title, t.completed, t.priority, t.deadline, t.category_id,
+            t.id, t.title, t.completed, t.priority, t.deadline, t.category_id, t.created_by, t.created_at,
             c.name AS category_name, c.color AS category_color
         FROM todos t
         LEFT JOIN categories c ON t.category_id = c.id
@@ -80,8 +82,8 @@
 
     <insert id="insert" parameterType="com.example.todo.model.Todo"
             useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO todos (title, completed, priority, deadline, category_id)
-        VALUES (#{title}, #{completed}, #{priority}, #{deadline}, #{categoryId})
+        INSERT INTO todos (title, completed, priority, deadline, category_id, created_by, created_at)
+        VALUES (#{title}, #{completed}, #{priority}, #{deadline}, #{categoryId}, #{createdBy}, #{createdAt})
     </insert>
 
     <delete id="deleteById" parameterType="long">

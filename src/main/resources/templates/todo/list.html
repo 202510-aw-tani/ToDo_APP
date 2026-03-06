@@ -46,6 +46,7 @@
                 <button type="submit" class="btn btn-outline-secondary">絞り込み</button>
                 <a class="btn btn-outline-secondary" th:href="@{/todo(sort=${sort})}" href="/todo">リセット</a>
             </form>
+            <a class="btn btn-outline-secondary" th:href="@{/todo/export}" href="/todo/export">CSVダウンロード</a>
             <a class="btn btn-primary" href="/todo/new">新規登録</a>
         </div>
     </div>
