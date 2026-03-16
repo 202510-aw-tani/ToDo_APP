@@ -9,12 +9,25 @@
         <result property="username" column="username" />
         <result property="password" column="password" />
         <result property="role" column="role" />
+        <result property="enabled" column="enabled" />
     </resultMap>
 
     <select id="findByUsername" resultMap="UserResultMap">
-        SELECT id, username, password, role
+        SELECT id, username, password, role, enabled
         FROM users
         WHERE username = #{username}
+    </select>
+
+    <select id="findAll" resultMap="UserResultMap">
+        SELECT id, username, password, role, enabled
+        FROM users
+        ORDER BY id
+    </select>
+
+    <select id="findById" resultMap="UserResultMap">
+        SELECT id, username, password, role, enabled
+        FROM users
+        WHERE id = #{id}
     </select>
 
     <select id="countByUsername" resultType="int">
@@ -25,8 +38,15 @@
 
     <insert id="insert" parameterType="com.example.todo.model.AppUser"
             useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO users (username, password, role)
-        VALUES (#{username}, #{password}, #{role})
+        INSERT INTO users (username, password, role, enabled)
+        VALUES (#{username}, #{password}, #{role}, #{enabled})
     </insert>
+
+    <update id="updateRoleAndEnabled">
+        UPDATE users
+        SET role = #{role},
+            enabled = #{enabled}
+        WHERE id = #{id}
+    </update>
 
 </mapper>

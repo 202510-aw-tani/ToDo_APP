@@ -23,18 +23,35 @@ public class UserDataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        AppUser admin = userMapper.findByUsername("admin");
-        if (admin == null) {
-            AppUser newAdmin = new AppUser();
-            newAdmin.setUsername("admin");
-            newAdmin.setPassword(passwordEncoder.encode("admin123"));
-            newAdmin.setRole("ROLE_USER");
-            userMapper.insert(newAdmin);
-            admin = userMapper.findByUsername("admin");
+        AppUser admin = ensureUser("admin", "admin123", "ROLE_ADMIN");
+        ensureUser("user", "user123", "ROLE_USER");
+
+        if (admin != null && !Boolean.TRUE.equals(admin.getEnabled())) {
+            userMapper.updateRoleAndEnabled(admin.getId(), "ROLE_ADMIN", true);
+            admin.setEnabled(true);
+            admin.setRole("ROLE_ADMIN");
+        } else if (admin != null && !"ROLE_ADMIN".equals(admin.getRole())) {
+            userMapper.updateRoleAndEnabled(admin.getId(), "ROLE_ADMIN", true);
+            admin.setRole("ROLE_ADMIN");
         }
 
         if (admin != null) {
             todoMapper.assignUnownedTodosToUser(admin.getId());
         }
+    }
+
+    private AppUser ensureUser(String username, String rawPassword, String role) {
+        AppUser existing = userMapper.findByUsername(username);
+        if (existing != null) {
+            return existing;
+        }
+
+        AppUser user = new AppUser();
+        user.setUsername(username);
+        user.setPassword(passwordEncoder.encode(rawPassword));
+        user.setRole(role);
+        user.setEnabled(true);
+        userMapper.insert(user);
+        return userMapper.findByUsername(username);
     }
 }

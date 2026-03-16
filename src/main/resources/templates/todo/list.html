@@ -29,6 +29,9 @@
             <form th:action="@{/logout}" method="post" class="d-inline">
                 <button type="submit" class="btn btn-outline-danger">ログアウト</button>
             </form>
+            <a sec:authorize="hasRole('ADMIN')" class="btn btn-outline-dark" th:href="@{/admin/users}" href="/admin/users">
+                ユーザー管理
+            </a>
             <a class="btn btn-outline-secondary"
                th:classappend="${sort == 'id'} ? 'active' : ''"
                th:href="@{/todo(sort='id', categoryId=${selectedCategoryId})}" href="/todo?sort=id">ID順</a>
@@ -81,6 +84,7 @@
                     </th>
                     <th style="width: 80px;">ID</th>
                     <th>タイトル</th>
+                    <th sec:authorize="hasRole('ADMIN')" style="width: 120px;">作成者</th>
                     <th style="width: 120px;">優先度</th>
                     <th style="width: 140px;">カテゴリ</th>
                     <th style="width: 140px;">期限日</th>
@@ -98,6 +102,7 @@
                     <td>
                         <span th:text="${todo.title}" th:classappend="${todo.completed} ? 'text-decoration-line-through' : ''">サンプルタスク</span>
                     </td>
+                    <td sec:authorize="hasRole('ADMIN')" th:text="${todo.createdBy}">admin</td>
                     <td>
                         <span class="badge"
                               th:classappend="${todo.priority.badgeClass}"

@@ -12,6 +12,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -51,9 +52,11 @@ public class TodoController {
         int size = 10;
         boolean sortByPriority = "priority".equalsIgnoreCase(sort);
         boolean sortByDeadline = "deadline".equalsIgnoreCase(sort);
+        boolean admin = loginUser.isAdmin();
+
         PageRequest pageable = PageRequest.of(page, size);
         Page<Todo> todoPage = todoService.findPage(pageable, sortByPriority, sortByDeadline, categoryId,
-                loginUser.getId());
+                loginUser.getId(), admin);
 
         long total = todoPage.getTotalElements();
         int currentPage = todoPage.getNumber();
@@ -68,6 +71,7 @@ public class TodoController {
         model.addAttribute("sort", sortByDeadline ? "deadline" : (sortByPriority ? "priority" : "id"));
         model.addAttribute("categories", categoryService.findAll());
         model.addAttribute("selectedCategoryId", categoryId);
+        model.addAttribute("isAdmin", admin);
         return "todo/list";
     }
 
@@ -103,43 +107,35 @@ public class TodoController {
     }
 
     @PostMapping("/{id}/delete")
+    @PreAuthorize("hasRole('ADMIN') or @todoSecurityService.isOwner(#id, principal)")
     public String delete(@PathVariable("id") Long id,
             @AuthenticationPrincipal LoginUserPrincipal loginUser,
             RedirectAttributes redirectAttributes) {
-        validateOwner(id, loginUser.getId());
-        boolean deleted = todoService.deleteByIdAndUserId(id, loginUser.getId());
-        if (deleted) {
-            redirectAttributes.addFlashAttribute("successMessage", "ToDo\u3092\u524a\u9664\u3057\u307e\u3057\u305f\u3002");
-        } else {
-            redirectAttributes.addFlashAttribute("errorMessage", "ToDo\u306e\u524a\u9664\u306b\u5931\u6557\u3057\u307e\u3057\u305f\u3002");
+        boolean deleted = todoService.deleteById(id, loginUser.getId(), loginUser.isAdmin());
+        if (!deleted) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
+        redirectAttributes.addFlashAttribute("successMessage", "ToDoを削除しました。");
         return "redirect:/todo";
     }
 
     @PostMapping("/bulk-delete")
+    @PreAuthorize("hasRole('ADMIN') or @todoSecurityService.areAllOwned(#ids, principal)")
     public String bulkDelete(@RequestParam(name = "ids", required = false) List<Integer> ids,
             @AuthenticationPrincipal LoginUserPrincipal loginUser,
             RedirectAttributes redirectAttributes) {
-        if (ids != null) {
-            for (Integer todoId : ids) {
-                validateOwner(todoId.longValue(), loginUser.getId());
-            }
-        }
-
-        int deleted = todoService.deleteByIdsAndUserId(ids, loginUser.getId());
+        int deleted = todoService.deleteByIds(ids, loginUser.getId(), loginUser.isAdmin());
         if (deleted > 0) {
-            redirectAttributes.addFlashAttribute("successMessage",
-                    deleted + "\u4ef6\u306eToDo\u3092\u524a\u9664\u3057\u307e\u3057\u305f\u3002");
+            redirectAttributes.addFlashAttribute("successMessage", deleted + "件のToDoを削除しました。");
         } else {
-            redirectAttributes.addFlashAttribute("errorMessage",
-                    "\u524a\u9664\u5bfe\u8c61\u306eToDo\u304c\u9078\u629e\u3055\u308c\u3066\u3044\u307e\u305b\u3093\u3002");
+            redirectAttributes.addFlashAttribute("errorMessage", "削除対象のToDoが選択されていません。");
         }
         return "redirect:/todo";
     }
 
     @GetMapping("/export")
     public ResponseEntity<byte[]> exportCsv(@AuthenticationPrincipal LoginUserPrincipal loginUser) {
-        String csv = buildCsv(todoService.findAllByUserId(loginUser.getId()));
+        String csv = buildCsv(todoService.findAllForExport(loginUser.getId(), loginUser.isAdmin()));
         byte[] bom = new byte[] { (byte) 0xEF, (byte) 0xBB, (byte) 0xBF };
         byte[] body = csv.getBytes(StandardCharsets.UTF_8);
         byte[] data = new byte[bom.length + body.length];
@@ -154,16 +150,21 @@ public class TodoController {
     }
 
     @GetMapping("/{id}/edit")
+    @PreAuthorize("hasRole('ADMIN') or @todoSecurityService.isOwner(#id, principal)")
     public String edit(@PathVariable("id") Long id,
             @AuthenticationPrincipal LoginUserPrincipal loginUser,
             Model model) {
-        validateOwner(id, loginUser.getId());
-        model.addAttribute("todo", todoService.findByIdAndUserId(id, loginUser.getId()));
+        Todo todo = todoService.findByIdForAccess(id, loginUser.getId(), loginUser.isAdmin());
+        if (todo == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+        model.addAttribute("todo", todo);
         model.addAttribute("categories", categoryService.findAll());
         return "todo/edit";
     }
 
     @PostMapping("/{id}/update")
+    @PreAuthorize("hasRole('ADMIN') or @todoSecurityService.isOwner(#id, principal)")
     public String update(@PathVariable("id") Long id,
             @RequestParam("title") String title,
             @RequestParam(name = "priority", defaultValue = "MEDIUM") Priority priority,
@@ -171,38 +172,31 @@ public class TodoController {
             @RequestParam(name = "deadline", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate deadline,
             @AuthenticationPrincipal LoginUserPrincipal loginUser,
             RedirectAttributes redirectAttributes) {
-        validateOwner(id, loginUser.getId());
-        boolean updated = todoService.update(id, title, priority, categoryId, deadline, loginUser.getId());
-        if (updated) {
-            redirectAttributes.addFlashAttribute("successMessage", "ToDo\u3092\u66f4\u65b0\u3057\u307e\u3057\u305f\u3002");
-        } else {
-            redirectAttributes.addFlashAttribute("errorMessage", "ToDo\u306e\u66f4\u65b0\u306b\u5931\u6557\u3057\u307e\u3057\u305f\u3002");
+        boolean updated = todoService.update(id, title, priority, categoryId, deadline, loginUser.getId(),
+                loginUser.isAdmin());
+        if (!updated) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
+        redirectAttributes.addFlashAttribute("successMessage", "ToDoを更新しました。");
         return "redirect:/todo";
     }
 
     @PostMapping("/{id}/toggle")
+    @PreAuthorize("hasRole('ADMIN') or @todoSecurityService.isOwner(#id, principal)")
     public String toggle(@PathVariable("id") Long id,
             @AuthenticationPrincipal LoginUserPrincipal loginUser) {
-        validateOwner(id, loginUser.getId());
-        todoService.toggleCompleted(id, loginUser.getId());
-        return "redirect:/todo";
-    }
-
-    private void validateOwner(Long todoId, Long userId) {
-        if (!todoService.existsById(todoId)) {
+        boolean toggled = todoService.toggleCompleted(id, loginUser.getId(), loginUser.isAdmin());
+        if (!toggled) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
-        if (!todoService.isOwner(todoId, userId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-        }
+        return "redirect:/todo";
     }
 
     private String buildCsv(List<Todo> todos) {
         StringBuilder sb = new StringBuilder();
-        sb.append("ID,\u30bf\u30a4\u30c8\u30eb,\u4f5c\u6210\u8005,\u72b6\u614b,\u4f5c\u6210\u65e5").append("\r\n");
+        sb.append("ID,タイトル,作成者,状態,作成日").append("\r\n");
         for (Todo todo : todos) {
-            String status = Boolean.TRUE.equals(todo.getCompleted()) ? "\u5b8c\u4e86" : "\u672a\u5b8c\u4e86";
+            String status = Boolean.TRUE.equals(todo.getCompleted()) ? "完了" : "未完了";
             String createdAt = todo.getCreatedAt() != null ? todo.getCreatedAt().toString() : "";
             sb.append(escapeCsv(String.valueOf(todo.getId()))).append(',')
                     .append(escapeCsv(todo.getTitle())).append(',')

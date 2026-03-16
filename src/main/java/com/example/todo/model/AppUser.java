@@ -8,4 +8,5 @@ public class AppUser {
     private String username;
     private String password;
     private String role;
+    private Boolean enabled;
 }

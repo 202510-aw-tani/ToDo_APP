@@ -35,6 +35,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 appUser.getId(),
                 appUser.getUsername(),
                 appUser.getPassword(),
-                role);
+                role,
+                Boolean.TRUE.equals(appUser.getEnabled()));
     }
 }

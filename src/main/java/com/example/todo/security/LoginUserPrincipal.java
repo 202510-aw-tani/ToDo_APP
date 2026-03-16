@@ -12,17 +12,23 @@ public class LoginUserPrincipal implements UserDetails {
     private final Long id;
     private final String username;
     private final String password;
+    private final boolean enabled;
     private final Collection<? extends GrantedAuthority> authorities;
 
-    public LoginUserPrincipal(Long id, String username, String password, String role) {
+    public LoginUserPrincipal(Long id, String username, String password, String role, boolean enabled) {
         this.id = id;
         this.username = username;
         this.password = password;
+        this.enabled = enabled;
         this.authorities = Collections.singletonList(new SimpleGrantedAuthority(role));
     }
 
     public Long getId() {
         return id;
+    }
+
+    public boolean isAdmin() {
+        return authorities.stream().anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
     }
 
     @Override
@@ -57,6 +63,6 @@ public class LoginUserPrincipal implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return enabled;
     }
 }
