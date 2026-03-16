@@ -1,28 +1,30 @@
 package com.example.todo.controller;
 
-import org.springframework.stereotype.Controller;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.format.annotation.DateTimeFormat;
-
-import com.example.todo.service.TodoService;
-import com.example.todo.service.CategoryService;
-import com.example.todo.model.Priority;
-import com.example.todo.model.Category;
-import java.time.LocalDate;
-import java.util.List;
-import java.time.format.DateTimeFormatter;
-import java.nio.charset.StandardCharsets;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import com.example.todo.model.Category;
+import com.example.todo.model.Priority;
+import com.example.todo.model.Todo;
+import com.example.todo.service.CategoryService;
+import com.example.todo.service.TodoService;
 
 @Controller
 @RequestMapping("/todo")
@@ -45,12 +47,13 @@ public class TodoController {
         boolean sortByPriority = "priority".equalsIgnoreCase(sort);
         boolean sortByDeadline = "deadline".equalsIgnoreCase(sort);
         PageRequest pageable = PageRequest.of(page, size);
-        Page<com.example.todo.model.Todo> todoPage = todoService.findPage(pageable, sortByPriority, sortByDeadline,
-                categoryId);
+        Page<Todo> todoPage = todoService.findPage(pageable, sortByPriority, sortByDeadline, categoryId);
+
         long total = todoPage.getTotalElements();
         int currentPage = todoPage.getNumber();
         long start = total == 0 ? 0 : (long) currentPage * size + 1;
         long end = Math.min((long) (currentPage + 1) * size, total);
+
         model.addAttribute("todoPage", todoPage);
         model.addAttribute("pageNumbers", java.util.stream.IntStream.range(0, todoPage.getTotalPages()).toArray());
         model.addAttribute("totalCount", total);
@@ -96,9 +99,9 @@ public class TodoController {
     public String delete(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
         boolean deleted = todoService.deleteById(id);
         if (deleted) {
-            redirectAttributes.addFlashAttribute("successMessage", "ToDoを削除しました");
+            redirectAttributes.addFlashAttribute("successMessage", "ToDoを削除しました。");
         } else {
-            redirectAttributes.addFlashAttribute("errorMessage", "削除に失敗しました");
+            redirectAttributes.addFlashAttribute("errorMessage", "ToDoの削除に失敗しました。");
         }
         return "redirect:/todo";
     }
@@ -108,9 +111,9 @@ public class TodoController {
             RedirectAttributes redirectAttributes) {
         int deleted = todoService.deleteByIds(ids);
         if (deleted > 0) {
-            redirectAttributes.addFlashAttribute("successMessage", deleted + "件のToDoを削除しました");
+            redirectAttributes.addFlashAttribute("successMessage", deleted + "件のToDoを削除しました。");
         } else {
-            redirectAttributes.addFlashAttribute("errorMessage", "削除対象が選択されていません");
+            redirectAttributes.addFlashAttribute("errorMessage", "削除対象のToDoが選択されていません。");
         }
         return "redirect:/todo";
     }
@@ -131,10 +134,39 @@ public class TodoController {
         return ResponseEntity.ok().headers(headers).body(data);
     }
 
-    private String buildCsv(List<com.example.todo.model.Todo> todos) {
+    @GetMapping("/{id}/edit")
+    public String edit(@PathVariable("id") Long id, Model model) {
+        model.addAttribute("todo", todoService.findById(id));
+        model.addAttribute("categories", categoryService.findAll());
+        return "todo/edit";
+    }
+
+    @PostMapping("/{id}/update")
+    public String update(@PathVariable("id") Long id,
+            @RequestParam("title") String title,
+            @RequestParam(name = "priority", defaultValue = "MEDIUM") Priority priority,
+            @RequestParam(name = "categoryId", required = false) Long categoryId,
+            @RequestParam(name = "deadline", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate deadline,
+            RedirectAttributes redirectAttributes) {
+        boolean updated = todoService.update(id, title, priority, categoryId, deadline);
+        if (updated) {
+            redirectAttributes.addFlashAttribute("successMessage", "ToDoを更新しました。");
+        } else {
+            redirectAttributes.addFlashAttribute("errorMessage", "ToDoの更新に失敗しました。");
+        }
+        return "redirect:/todo";
+    }
+
+    @PostMapping("/{id}/toggle")
+    public String toggle(@PathVariable("id") Long id) {
+        todoService.toggleCompleted(id);
+        return "redirect:/todo";
+    }
+
+    private String buildCsv(List<Todo> todos) {
         StringBuilder sb = new StringBuilder();
-        sb.append("ID,タイトル,登録者,ステータス,作成日").append("\r\n");
-        for (com.example.todo.model.Todo todo : todos) {
+        sb.append("ID,タイトル,作成者,状態,作成日").append("\r\n");
+        for (Todo todo : todos) {
             String status = Boolean.TRUE.equals(todo.getCompleted()) ? "完了" : "未完了";
             String createdAt = todo.getCreatedAt() != null ? todo.getCreatedAt().toString() : "";
             sb.append(escapeCsv(String.valueOf(todo.getId()))).append(',')
@@ -154,39 +186,5 @@ public class TodoController {
                 || value.contains("\r");
         String escaped = value.replace("\"", "\"\"");
         return needsQuote ? "\"" + escaped + "\"" : escaped;
-        
-    
-
-    
-        ing("/{id}/edit")
-    imodel.ddAttribute("todo", todoService.findById(id));
-        model.addAttribute("categories", categoryService.findAll());
-        return "todo/edit";
     }
-
-    @PostMapping("/{id}/update")
-    public String update(@PathVariable("id") Long id,
-            @RequestParam("title") String title,
-            @RequestParam(name = "priority", defaultValue = "MEDIUM") Priority priority,
-            @RequestParam(name = "categoryId", required = false) Long categoryId,
-            @RequestParam(name = "deadline", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate deadline,
-            RedirectAttributes redirectAttributes) {
-        boolean updated = todoService.update(id, title, priority, categoryId, deadline);
-        if (updated) {
-            redirectAttributes.addFlashAttribute("successMessage", "更新が完了しました");
-        } else {
-            redirectAttributes.addFlashAttribute("errorMessage", "更新に失敗しました");
-        }
-        return "redirect:/todo";
-    }
-
-    @PostMapping("/{id}/toggle")
-    public String toggle(@PathVariable("id") Long id) {
-        todoService.toggleCompleted(id);
-        return "redirect:/todo";
-    }
-                    
-                    
-                    
-                    
-                
+}

@@ -1,6 +1,16 @@
+C:\academia\src\ToDo_APP\src\main\java\com\example\todo\controller\AuthController.java
 C:\academia\src\ToDo_APP\src\main\java\com\example\todo\controller\HelloController.java
 C:\academia\src\ToDo_APP\src\main\java\com\example\todo\controller\TodoController.java
+C:\academia\src\ToDo_APP\src\main\java\com\example\todo\mapper\CategoryMapper.java
 C:\academia\src\ToDo_APP\src\main\java\com\example\todo\mapper\TodoMapper.java
+C:\academia\src\ToDo_APP\src\main\java\com\example\todo\mapper\UserMapper.java
+C:\academia\src\ToDo_APP\src\main\java\com\example\todo\model\AppUser.java
+C:\academia\src\ToDo_APP\src\main\java\com\example\todo\model\Category.java
+C:\academia\src\ToDo_APP\src\main\java\com\example\todo\model\Priority.java
 C:\academia\src\ToDo_APP\src\main\java\com\example\todo\model\Todo.java
+C:\academia\src\ToDo_APP\src\main\java\com\example\todo\security\CustomUserDetailsService.java
+C:\academia\src\ToDo_APP\src\main\java\com\example\todo\security\SecurityConfig.java
+C:\academia\src\ToDo_APP\src\main\java\com\example\todo\security\UserDataInitializer.java
+C:\academia\src\ToDo_APP\src\main\java\com\example\todo\service\CategoryService.java
 C:\academia\src\ToDo_APP\src\main\java\com\example\todo\service\TodoService.java
 C:\academia\src\ToDo_APP\src\main\java\com\example\todo\TodoApplication.java
