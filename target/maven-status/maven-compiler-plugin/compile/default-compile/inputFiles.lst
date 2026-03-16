@@ -9,6 +9,7 @@ C:\academia\src\ToDo_APP\src\main\java\com\example\todo\model\Category.java
 C:\academia\src\ToDo_APP\src\main\java\com\example\todo\model\Priority.java
 C:\academia\src\ToDo_APP\src\main\java\com\example\todo\model\Todo.java
 C:\academia\src\ToDo_APP\src\main\java\com\example\todo\security\CustomUserDetailsService.java
+C:\academia\src\ToDo_APP\src\main\java\com\example\todo\security\LoginUserPrincipal.java
 C:\academia\src\ToDo_APP\src\main\java\com\example\todo\security\SecurityConfig.java
 C:\academia\src\ToDo_APP\src\main\java\com\example\todo\security\UserDataInitializer.java
 C:\academia\src\ToDo_APP\src\main\java\com\example\todo\service\CategoryService.java

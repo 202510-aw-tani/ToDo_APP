@@ -7,23 +7,30 @@ import org.apache.ibatis.annotations.Param;
 import com.example.todo.model.Todo;
 
 public interface TodoMapper {
-    List<Todo> findAll();
+    List<Todo> findAllByUserId(@Param("userId") Long userId);
 
     List<Todo> findPage(@Param("limit") int limit,
             @Param("offset") int offset,
             @Param("sortByPriority") boolean sortByPriority,
             @Param("sortByDeadline") boolean sortByDeadline,
-            @Param("categoryId") Long categoryId);
+            @Param("categoryId") Long categoryId,
+            @Param("userId") Long userId);
 
-    long countAll(@Param("categoryId") Long categoryId);
+    long countAll(@Param("categoryId") Long categoryId, @Param("userId") Long userId);
 
     int insert(Todo todo);
 
-    int deleteById(Long id);
+    int deleteByIdAndUserId(@Param("id") Long id, @Param("userId") Long userId);
 
-    int deleteByIds(@Param("ids") List<Integer> ids);
+    int deleteByIdsAndUserId(@Param("ids") List<Integer> ids, @Param("userId") Long userId);
 
-    Todo findById(Long id);
+    Todo findByIdAndUserId(@Param("id") Long id, @Param("userId") Long userId);
 
-    int update(Todo todo);
+    int existsById(@Param("id") Long id);
+
+    int countByIdAndUserId(@Param("id") Long id, @Param("userId") Long userId);
+
+    int updateByIdAndUserId(Todo todo);
+
+    int assignUnownedTodosToUser(@Param("userId") Long userId);
 }

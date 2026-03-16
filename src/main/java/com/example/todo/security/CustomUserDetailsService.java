@@ -1,6 +1,5 @@
 package com.example.todo.security;
 
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -32,9 +31,10 @@ public class CustomUserDetailsService implements UserDetailsService {
             role = "ROLE_" + role;
         }
 
-        return User.withUsername(appUser.getUsername())
-                .password(appUser.getPassword())
-                .authorities(role)
-                .build();
+        return new LoginUserPrincipal(
+                appUser.getId(),
+                appUser.getUsername(),
+                appUser.getPassword(),
+                role);
     }
 }

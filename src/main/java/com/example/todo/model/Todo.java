@@ -10,6 +10,7 @@ public class Todo {
     private String title;
     private Boolean completed;
     private Priority priority;
+    private Long userId;
     private Long categoryId;
     private Category category;
     private LocalDate deadline;

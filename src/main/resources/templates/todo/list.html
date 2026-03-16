@@ -66,8 +66,12 @@
     </div>
 
     <div th:unless="${todoPage.empty}" class="card shadow-sm">
-        <form th:action="@{/todo/bulk-delete}" action="/todo/bulk-delete" method="post"
+        <form id="bulkDeleteForm"
+              th:action="@{/todo/bulk-delete}"
+              action="/todo/bulk-delete"
+              method="post"
               onsubmit="return confirm('選択したToDoを削除しますか？');">
+        </form>
         <div class="card-body p-0">
             <table class="table table-striped mb-0">
                 <thead class="table-light">
@@ -88,7 +92,7 @@
                 <tr th:each="todo : ${todoPage.content}"
                     th:classappend="${todo.overdue} ? 'overdue-row' : (${todo.nearDeadline} ? 'warning-row' : '')">
                     <td>
-                        <input type="checkbox" class="row-check" name="ids" th:value="${todo.id}">
+                        <input type="checkbox" class="row-check" name="ids" th:value="${todo.id}" form="bulkDeleteForm">
                     </td>
                     <td th:text="${todo.id}">1</td>
                     <td>
@@ -137,7 +141,7 @@
                 <span th:text="'全' + ${totalCount} + '件中 ' + ${rangeStart} + '-' + ${rangeEnd} + '件'">全0件中 0-0件</span>
             </div>
             <div class="d-flex align-items-center gap-2">
-                <button type="submit" class="btn btn-danger btn-sm">選択した項目を削除</button>
+                <button type="submit" form="bulkDeleteForm" class="btn btn-danger btn-sm">選択した項目を削除</button>
                 <nav aria-label="ToDo pagination">
                     <ul class="pagination mb-0">
                         <li class="page-item" th:classappend="${todoPage.first} ? 'disabled' : ''">
@@ -160,7 +164,6 @@
                 </nav>
             </div>
         </div>
-        </form>
     </div>
 </div>
 <script>
