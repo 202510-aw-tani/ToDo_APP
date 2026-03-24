@@ -9,7 +9,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,12 +20,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.todo.model.Category;
 import com.example.todo.model.Priority;
 import com.example.todo.model.Todo;
+import com.example.todo.exception.TodoNotFoundException;
 import com.example.todo.security.LoginUserPrincipal;
 import com.example.todo.service.CategoryService;
 import com.example.todo.service.TodoService;
@@ -113,7 +112,7 @@ public class TodoController {
             RedirectAttributes redirectAttributes) {
         boolean deleted = todoService.deleteById(id, loginUser.getId(), loginUser.isAdmin());
         if (!deleted) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+            throw new TodoNotFoundException(id);
         }
         redirectAttributes.addFlashAttribute("successMessage", "ToDoを削除しました。");
         return "redirect:/todo";
@@ -156,7 +155,7 @@ public class TodoController {
             Model model) {
         Todo todo = todoService.findByIdForAccess(id, loginUser.getId(), loginUser.isAdmin());
         if (todo == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+            throw new TodoNotFoundException(id);
         }
         model.addAttribute("todo", todo);
         model.addAttribute("categories", categoryService.findAll());
@@ -175,7 +174,7 @@ public class TodoController {
         boolean updated = todoService.update(id, title, priority, categoryId, deadline, loginUser.getId(),
                 loginUser.isAdmin());
         if (!updated) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+            throw new TodoNotFoundException(id);
         }
         redirectAttributes.addFlashAttribute("successMessage", "ToDoを更新しました。");
         return "redirect:/todo";
@@ -187,7 +186,7 @@ public class TodoController {
             @AuthenticationPrincipal LoginUserPrincipal loginUser) {
         boolean toggled = todoService.toggleCompleted(id, loginUser.getId(), loginUser.isAdmin());
         if (!toggled) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+            throw new TodoNotFoundException(id);
         }
         return "redirect:/todo";
     }
