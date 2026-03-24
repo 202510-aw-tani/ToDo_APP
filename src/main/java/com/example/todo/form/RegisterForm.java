@@ -7,15 +7,15 @@ import lombok.Data;
 @Data
 public class RegisterForm {
 
-    @NotBlank
-    @Size(max = 100)
+    @NotBlank(message = "{validation.username.required}")
+    @Size(max = 100, message = "{validation.username.max}")
     private String username;
 
-    @NotBlank
-    @Size(min = 8, max = 72)
+    @NotBlank(message = "{validation.password.required}")
+    @Size(min = 8, max = 72, message = "{validation.password.size}")
     private String password;
 
-    @NotBlank
+    @NotBlank(message = "{validation.confirmPassword.required}")
     private String confirmPassword;
 }
 

@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>ToDo一覧</title>
+    <title th:text="#{todo.list.title}">ToDo一覧</title>
     <link
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
         rel="stylesheet"
@@ -14,57 +14,60 @@
 <body class="bg-light">
 <div class="container py-4">
     <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
-        <span th:text="${successMessage}">ToDoを削除しました</span>
+        <span th:text="${successMessage}">Success</span>
     </div>
     <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
-        <span th:text="${errorMessage}">削除に失敗しました</span>
+        <span th:text="${errorMessage}">Error</span>
     </div>
 
     <div class="d-flex align-items-center justify-content-between mb-3">
-        <h1 class="h3 mb-0">ToDo一覧</h1>
+        <h1 class="h3 mb-0" th:text="#{todo.list.heading}">ToDo一覧</h1>
         <div class="d-flex align-items-center gap-2 flex-wrap justify-content-end">
+            <a class="btn btn-outline-secondary btn-sm" th:href="@{/todo(lang='ja', sort=${sort}, categoryId=${selectedCategoryId})}" th:text="#{lang.ja}">日本語</a>
+            <a class="btn btn-outline-secondary btn-sm" th:href="@{/todo(lang='en', sort=${sort}, categoryId=${selectedCategoryId})}" th:text="#{lang.en}">English</a>
             <span class="small text-muted" sec:authorize="isAuthenticated()">
-                ログイン中: <strong sec:authentication="name">user</strong>
+                <span th:text="#{todo.list.loggedInAs}">Signed in:</span> <strong sec:authentication="name">user</strong>
             </span>
             <form th:action="@{/logout}" method="post" class="d-inline">
-                <button type="submit" class="btn btn-outline-danger">ログアウト</button>
+                <button type="submit" class="btn btn-outline-danger" th:text="#{todo.list.logout}">Logout</button>
             </form>
-            <a sec:authorize="hasRole('ADMIN')" class="btn btn-outline-dark" th:href="@{/admin/users}" href="/admin/users">
+            <a sec:authorize="hasRole('ADMIN')" class="btn btn-outline-dark" th:href="@{/admin/users}" href="/admin/users"
+               th:text="#{todo.list.userAdmin}">
                 ユーザー管理
             </a>
             <a class="btn btn-outline-secondary"
                th:classappend="${sort == 'id'} ? 'active' : ''"
-               th:href="@{/todo(sort='id', categoryId=${selectedCategoryId})}" href="/todo?sort=id">ID順</a>
+               th:href="@{/todo(sort='id', categoryId=${selectedCategoryId})}" href="/todo?sort=id" th:text="#{todo.list.sort.id}">ID順</a>
             <a class="btn btn-outline-secondary"
                th:classappend="${sort == 'priority'} ? 'active' : ''"
-               th:href="@{/todo(sort='priority', categoryId=${selectedCategoryId})}" href="/todo?sort=priority">優先度順</a>
+               th:href="@{/todo(sort='priority', categoryId=${selectedCategoryId})}" href="/todo?sort=priority" th:text="#{todo.list.sort.priority}">優先度順</a>
             <a class="btn btn-outline-secondary"
                th:classappend="${sort == 'deadline'} ? 'active' : ''"
-               th:href="@{/todo(sort='deadline', categoryId=${selectedCategoryId})}" href="/todo?sort=deadline">期限日順</a>
+               th:href="@{/todo(sort='deadline', categoryId=${selectedCategoryId})}" href="/todo?sort=deadline" th:text="#{todo.list.sort.deadline}">期限日順</a>
             <form class="d-flex align-items-center gap-2" th:action="@{/todo}" action="/todo" method="get">
                 <input type="hidden" name="sort" th:value="${sort}">
                 <select class="form-select" name="categoryId" style="min-width: 160px;">
-                    <option value="">全カテゴリ</option>
+                    <option value="" th:text="#{todo.list.allCategories}">全カテゴリ</option>
                     <option th:each="category : ${categories}"
                             th:value="${category.id}"
                             th:text="${category.name}"
                             th:selected="${category.id == selectedCategoryId}">
-                        カテゴリ
+                        Category
                     </option>
                 </select>
-                <button type="submit" class="btn btn-outline-secondary">絞り込み</button>
-                <a class="btn btn-outline-secondary" th:href="@{/todo(sort=${sort})}" href="/todo">リセット</a>
+                <button type="submit" class="btn btn-outline-secondary" th:text="#{common.filter}">絞り込み</button>
+                <a class="btn btn-outline-secondary" th:href="@{/todo(sort=${sort})}" href="/todo" th:text="#{common.reset}">リセット</a>
             </form>
-            <a class="btn btn-outline-secondary" th:href="@{/todo/export}" href="/todo/export">CSVダウンロード</a>
-            <a class="btn btn-primary" href="/todo/new">新規登録</a>
+            <a class="btn btn-outline-secondary" th:href="@{/todo/export}" href="/todo/export" th:text="#{todo.list.csv}">CSVダウンロード</a>
+            <a class="btn btn-primary" href="/todo/new" th:text="#{todo.list.new}">新規登録</a>
         </div>
     </div>
 
     <div th:if="${todoPage.empty}" class="card shadow-sm">
         <div class="card-body text-center py-5">
-            <h2 class="h5 mb-2">ToDoがまだ登録されていません</h2>
-            <p class="text-muted mb-4">まずは1件、ToDoを新規作成してみましょう。</p>
-            <a class="btn btn-primary" href="/todo/new">新規作成</a>
+            <h2 class="h5 mb-2" th:text="#{todo.list.empty.title}">ToDoがまだ登録されていません</h2>
+            <p class="text-muted mb-4" th:text="#{todo.list.empty.desc}">まずは1件、ToDoを新規作成してみましょう。</p>
+            <a class="btn btn-primary" href="/todo/new" th:text="#{todo.list.empty.button}">新規作成</a>
         </div>
     </div>
 
@@ -73,7 +76,7 @@
               th:action="@{/todo/bulk-delete}"
               action="/todo/bulk-delete"
               method="post"
-              onsubmit="return confirm('選択したToDoを削除しますか？');">
+              onsubmit="return confirm('Delete selected ToDo items?');">
         </form>
         <div class="card-body p-0">
             <table class="table table-striped mb-0">
@@ -82,14 +85,14 @@
                     <th style="width: 48px;">
                         <input type="checkbox" id="selectAll">
                     </th>
-                    <th style="width: 80px;">ID</th>
-                    <th>タイトル</th>
-                    <th sec:authorize="hasRole('ADMIN')" style="width: 120px;">作成者</th>
-                    <th style="width: 120px;">優先度</th>
-                    <th style="width: 140px;">カテゴリ</th>
-                    <th style="width: 140px;">期限日</th>
-                    <th style="width: 120px;">完了状態</th>
-                    <th style="width: 120px;">操作</th>
+                    <th style="width: 80px;" th:text="#{todo.list.id}">ID</th>
+                    <th th:text="#{todo.list.titleCol}">タイトル</th>
+                    <th sec:authorize="hasRole('ADMIN')" style="width: 120px;" th:text="#{todo.list.createdBy}">作成者</th>
+                    <th style="width: 120px;" th:text="#{todo.list.priority}">優先度</th>
+                    <th style="width: 140px;" th:text="#{todo.list.category}">カテゴリ</th>
+                    <th style="width: 140px;" th:text="#{todo.list.deadline}">期限日</th>
+                    <th style="width: 120px;" th:text="#{todo.list.status}">完了状態</th>
+                    <th style="width: 120px;" th:text="#{common.actions}">操作</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -100,41 +103,41 @@
                     </td>
                     <td th:text="${todo.id}">1</td>
                     <td>
-                        <span th:text="${todo.title}" th:classappend="${todo.completed} ? 'text-decoration-line-through' : ''">サンプルタスク</span>
+                        <span th:text="${todo.title}" th:classappend="${todo.completed} ? 'text-decoration-line-through' : ''">Sample task</span>
                     </td>
                     <td sec:authorize="hasRole('ADMIN')" th:text="${todo.createdBy}">admin</td>
                     <td>
                         <span class="badge"
                               th:classappend="${todo.priority.badgeClass}"
-                              th:text="${todo.priority.label}">中</span>
+                              th:text="${#messages.msg('priority.' + todo.priority.name())}">中</span>
                     </td>
                     <td>
                         <span th:if="${todo.category != null}"
                               class="badge text-white"
                               th:style="'background-color:' + ${todo.category.color}"
-                              th:text="${todo.category.name}">カテゴリ</span>
-                        <span th:if="${todo.category == null}" class="text-muted">未選択</span>
+                              th:text="${todo.category.name}">Category</span>
+                        <span th:if="${todo.category == null}" class="text-muted" th:text="#{common.notSelected}">未選択</span>
                     </td>
                     <td>
-                        <div th:text="${todo.deadline != null} ? ${#temporals.format(todo.deadline, 'yyyy-MM-dd')} : '-'">-</div>
+                        <div th:text="${todo.deadline != null ? #temporals.format(todo.deadline, 'yyyy-MM-dd') : '-'}">-</div>
                         <div class="small">
-                            <span th:if="${todo.overdue}" class="text-danger">期限切れ</span>
+                            <span th:if="${todo.overdue}" class="text-danger" th:text="#{todo.list.overdue}">期限切れ</span>
                             <span th:if="${!todo.overdue and todo.nearDeadline}"
                                   class="text-warning-emphasis"
-                                  th:text="'あと' + ${todo.daysUntilDeadline} + '日'">あと3日</span>
+                                  th:text="${#messages.msg('todo.list.daysLeft', todo.daysUntilDeadline)}">あと3日</span>
                         </div>
                     </td>
-                    <td th:text="${todo.completed} ? '完了' : '未完了'">未完了</td>
+                    <td th:text="${todo.completed ? #messages.msg('todo.list.status.done') : #messages.msg('todo.list.status.notDone')}">未完了</td>
                     <td>
                         <form th:action="@{/todo/{id}/toggle(id=${todo.id})}" action="/todo/1/toggle" method="post" class="d-inline me-2">
                             <button type="submit" class="btn btn-outline-secondary btn-sm"
-                                    th:text="${todo.completed} ? '未完了に戻す' : '完了にする'">完了にする</button>
+                                    th:text="${todo.completed ? #messages.msg('todo.list.markUndone') : #messages.msg('todo.list.markDone')}">完了にする</button>
                         </form>
                         <a class="btn btn-outline-primary btn-sm me-2"
-                           th:href="@{/todo/{id}/edit(id=${todo.id})}" href="/todo/1/edit">編集</a>
+                           th:href="@{/todo/{id}/edit(id=${todo.id})}" href="/todo/1/edit" th:text="#{common.edit}">編集</a>
                         <form th:action="@{/todo/{id}/delete(id=${todo.id})}" action="/todo/1/delete" method="post" class="d-inline"
-                              onsubmit="return confirm('本当に削除しますか？')">
-                            <button type="submit" class="btn btn-danger btn-sm">削除</button>
+                              onsubmit="return confirm('Are you sure to delete this item?')">
+                            <button type="submit" class="btn btn-danger btn-sm" th:text="#{common.delete}">削除</button>
                         </form>
                     </td>
                 </tr>
@@ -143,16 +146,16 @@
         </div>
         <div class="card-footer d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
             <div class="text-muted small">
-                <span th:text="'全' + ${totalCount} + '件中 ' + ${rangeStart} + '-' + ${rangeEnd} + '件'">全0件中 0-0件</span>
+                <span th:text="${#messages.msg('todo.list.range', totalCount, rangeStart, rangeEnd)}">全0件中 0-0件</span>
             </div>
             <div class="d-flex align-items-center gap-2">
-                <button type="submit" form="bulkDeleteForm" class="btn btn-danger btn-sm">選択した項目を削除</button>
+                <button type="submit" form="bulkDeleteForm" class="btn btn-danger btn-sm" th:text="#{todo.list.bulkDelete}">選択した項目を削除</button>
                 <nav aria-label="ToDo pagination">
                     <ul class="pagination mb-0">
                         <li class="page-item" th:classappend="${todoPage.first} ? 'disabled' : ''">
                             <a class="page-link"
                                th:href="${todoPage.first} ? '#' : @{/todo(page=${todoPage.number - 1}, sort=${sort}, categoryId=${selectedCategoryId})}"
-                               aria-label="前へ">前へ</a>
+                               th:attr="aria-label=#{common.previous}" th:text="#{common.previous}">前へ</a>
                         </li>
                         <li class="page-item" th:each="pageNumber : ${pageNumbers}"
                             th:classappend="${pageNumber == todoPage.number} ? 'active' : ''">
@@ -163,7 +166,7 @@
                         <li class="page-item" th:classappend="${todoPage.last} ? 'disabled' : ''">
                             <a class="page-link"
                                th:href="${todoPage.last} ? '#' : @{/todo(page=${todoPage.number + 1}, sort=${sort}, categoryId=${selectedCategoryId})}"
-                               aria-label="次へ">次へ</a>
+                               th:attr="aria-label=#{common.next}" th:text="#{common.next}">次へ</a>
                         </li>
                     </ul>
                 </nav>
@@ -207,5 +210,3 @@
 </style>
 </body>
 </html>
-
-

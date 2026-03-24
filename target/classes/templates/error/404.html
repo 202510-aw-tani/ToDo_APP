@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>404 Not Found</title>
+    <title th:text="#{error.404.title}">404 Not Found</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
@@ -13,9 +13,9 @@
             <div class="card shadow-sm">
                 <div class="card-body p-4 text-center">
                     <h1 class="display-6 mb-3">404</h1>
-                    <p class="lead mb-2">繝壹・繧ｸ縺瑚ｦ九▽縺九ｊ縺ｾ縺帙ｓ縺ｧ縺励◆縲・/p>
-                    <p class="text-muted" th:text="${message}">繧｢繧ｯ繧ｻ繧ｹ蜈医・URL繧堤｢ｺ隱阪＠縺ｦ縺上□縺輔＞縲・/p>
-                    <a class="btn btn-primary mt-3" th:href="@{/todo}" href="/todo">ToDo荳隕ｧ縺ｸ謌ｻ繧・/a>
+                    <p class="lead mb-2" th:text="#{error.404.message}">The page could not be found.</p>
+                    <p class="text-muted" th:text="${message}">Please check the URL.</p>
+                    <a class="btn btn-primary mt-3" th:href="@{/todo}" href="/todo" th:text="#{error.backToTodo}">Back to ToDo</a>
                 </div>
             </div>
         </div>
@@ -23,6 +23,3 @@
 </div>
 </body>
 </html>
-
-
-

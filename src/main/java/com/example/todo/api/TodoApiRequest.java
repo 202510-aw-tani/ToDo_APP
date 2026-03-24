@@ -7,8 +7,8 @@ import jakarta.validation.constraints.Size;
 
 public class TodoApiRequest {
 
-    @NotBlank
-    @Size(max = 255)
+    @NotBlank(message = "{validation.todo.title.required}")
+    @Size(max = 255, message = "{validation.todo.title.max}")
     private String title;
 
     private Boolean completed;

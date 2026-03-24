@@ -1,16 +1,20 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Edit User</title>
+    <title th:text="#{admin.userEdit.title}">Edit User</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
 <div class="container py-4">
     <div class="d-flex align-items-center justify-content-between mb-3">
-        <h1 class="h3 mb-0">Edit User</h1>
-        <a class="btn btn-outline-secondary" th:href="@{/admin/users}" href="/admin/users">Back</a>
+        <h1 class="h3 mb-0" th:text="#{admin.userEdit.heading}">Edit User</h1>
+        <div class="d-flex align-items-center gap-2">
+            <a class="btn btn-outline-secondary btn-sm" th:href="@{/admin/users/{id}/edit(id=${user.id},lang='ja')}" th:text="#{lang.ja}">日本語</a>
+            <a class="btn btn-outline-secondary btn-sm" th:href="@{/admin/users/{id}/edit(id=${user.id},lang='en')}" th:text="#{lang.en}">English</a>
+            <a class="btn btn-outline-secondary" th:href="@{/admin/users}" href="/admin/users" th:text="#{common.back}">Back</a>
+        </div>
     </div>
 
     <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
@@ -25,11 +29,11 @@
                     <input type="text" class="form-control" th:value="${user.id}" readonly>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Username</label>
+                    <label class="form-label" th:text="#{login.username}">Username</label>
                     <input type="text" class="form-control" th:value="${user.username}" readonly>
                 </div>
                 <div class="mb-3">
-                    <label for="role" class="form-label">Role</label>
+                    <label for="role" class="form-label" th:text="#{admin.users.role}">Role</label>
                     <select id="role" name="role" class="form-select">
                         <option value="ROLE_USER" th:selected="${user.role == 'ROLE_USER'}">USER</option>
                         <option value="ROLE_ADMIN" th:selected="${user.role == 'ROLE_ADMIN'}">ADMIN</option>
@@ -37,38 +41,35 @@
                 </div>
                 <div class="form-check mb-3">
                     <input class="form-check-input" type="checkbox" id="enabled" name="enabled" th:checked="${user.enabled}">
-                    <label class="form-check-label" for="enabled">Enabled</label>
+                    <label class="form-check-label" for="enabled" th:text="#{admin.users.enabled}">Enabled</label>
                 </div>
 
                 <hr>
-                <h2 class="h5">Password Reset (Optional)</h2>
+                <h2 class="h5" th:text="#{admin.userEdit.passwordReset}">Password Reset (Optional)</h2>
                 <div class="mb-3">
-                    <label for="newPassword" class="form-label">New Password</label>
+                    <label for="newPassword" class="form-label" th:text="#{admin.userEdit.newPassword}">New Password</label>
                     <input id="newPassword" name="newPassword" type="password" class="form-control" minlength="8">
                 </div>
                 <div class="mb-3">
-                    <label for="confirmPassword" class="form-label">Confirm New Password</label>
+                    <label for="confirmPassword" class="form-label" th:text="#{admin.userEdit.confirmNewPassword}">Confirm New Password</label>
                     <input id="confirmPassword" name="confirmPassword" type="password" class="form-control" minlength="8">
                 </div>
 
-                <button type="submit" class="btn btn-primary">Save</button>
+                <button type="submit" class="btn btn-primary" th:text="#{common.save}">Save</button>
             </form>
         </div>
     </div>
 
     <div class="card border-danger shadow-sm">
         <div class="card-body">
-            <h2 class="h5 text-danger">Delete User</h2>
-            <p class="text-muted mb-3">This deletes the user and all related todos.</p>
+            <h2 class="h5 text-danger" th:text="#{admin.userEdit.deleteUser}">Delete User</h2>
+            <p class="text-muted mb-3" th:text="#{admin.userEdit.deleteDesc}">This deletes the user and all related todos.</p>
             <form th:action="@{/admin/users/{id}/delete(id=${user.id})}" method="post"
                   onsubmit="return confirm('Delete this user and related todos?');">
-                <button type="submit" class="btn btn-danger">Delete User</button>
+                <button type="submit" class="btn btn-danger" th:text="#{admin.userEdit.deleteUser}">Delete User</button>
             </form>
         </div>
     </div>
 </div>
 </body>
 </html>
-
-
-

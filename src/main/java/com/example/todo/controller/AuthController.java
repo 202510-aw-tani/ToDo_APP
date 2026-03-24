@@ -7,11 +7,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 
 import com.example.todo.form.RegisterForm;
 import com.example.todo.service.UserService;
@@ -20,9 +21,11 @@ import com.example.todo.service.UserService;
 public class AuthController {
 
     private final UserService userService;
+    private final MessageSource messageSource;
 
-    public AuthController(UserService userService) {
+    public AuthController(UserService userService, MessageSource messageSource) {
         this.userService = userService;
+        this.messageSource = messageSource;
     }
 
     @GetMapping("/login")
@@ -60,11 +63,11 @@ public class AuthController {
         if (!bindingResult.hasFieldErrors("password")
                 && !bindingResult.hasFieldErrors("confirmPassword")
                 && !form.getPassword().equals(form.getConfirmPassword())) {
-            bindingResult.addError(new FieldError("registerForm", "confirmPassword", "Passwords do not match."));
+            bindingResult.rejectValue("confirmPassword", "validation.password.mismatch");
         }
 
         if (!bindingResult.hasFieldErrors("username") && userService.existsByUsername(form.getUsername())) {
-            bindingResult.addError(new FieldError("registerForm", "username", "Username is already in use."));
+            bindingResult.rejectValue("username", "validation.username.duplicate");
         }
 
         if (bindingResult.hasErrors()) {
@@ -72,7 +75,8 @@ public class AuthController {
         }
 
         userService.register(form.getUsername(), form.getPassword());
-        redirectAttributes.addFlashAttribute("registeredMessage", "Registration completed. Please sign in.");
+        redirectAttributes.addFlashAttribute("registeredMessage",
+                messageSource.getMessage("register.completed", null, LocaleContextHolder.getLocale()));
         return "redirect:/login";
     }
 }

@@ -3,6 +3,7 @@ C:\academia\src\ToDo_APP\src\main\java\com\example\todo\api\TodoApiController.ja
 C:\academia\src\ToDo_APP\src\main\java\com\example\todo\api\TodoApiRequest.java
 C:\academia\src\ToDo_APP\src\main\java\com\example\todo\aspect\LoggingAspect.java
 C:\academia\src\ToDo_APP\src\main\java\com\example\todo\aspect\PerformanceAspect.java
+C:\academia\src\ToDo_APP\src\main\java\com\example\todo\config\WebConfig.java
 C:\academia\src\ToDo_APP\src\main\java\com\example\todo\controller\AdminUserController.java
 C:\academia\src\ToDo_APP\src\main\java\com\example\todo\controller\AuthController.java
 C:\academia\src\ToDo_APP\src\main\java\com\example\todo\controller\HelloController.java

@@ -1,20 +1,22 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>User Management</title>
+    <title th:text="#{admin.users.title}">User Management</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
 <div class="container py-4">
     <div class="d-flex align-items-center justify-content-between mb-3">
-        <h1 class="h3 mb-0">User Management</h1>
+        <h1 class="h3 mb-0" th:text="#{admin.users.heading}">User Management</h1>
         <div class="d-flex align-items-center gap-2">
+            <a class="btn btn-outline-secondary btn-sm" th:href="@{/admin/users(lang='ja')}" th:text="#{lang.ja}">日本語</a>
+            <a class="btn btn-outline-secondary btn-sm" th:href="@{/admin/users(lang='en')}" th:text="#{lang.en}">English</a>
             <span class="small text-muted" sec:authorize="isAuthenticated()">
-                Signed in: <strong sec:authentication="name">admin</strong>
+                <span th:text="#{todo.list.loggedInAs}">Signed in:</span> <strong sec:authentication="name">admin</strong>
             </span>
-            <a class="btn btn-outline-secondary" th:href="@{/todo}" href="/todo">Back to ToDo</a>
+            <a class="btn btn-outline-secondary" th:href="@{/todo}" href="/todo" th:text="#{admin.users.backTodo}">Back to ToDo</a>
         </div>
     </div>
 
@@ -31,11 +33,11 @@
                 <thead class="table-light">
                 <tr>
                     <th style="width: 80px;">ID</th>
-                    <th>Username</th>
-                    <th style="width: 140px;">Role</th>
-                    <th style="width: 120px;">Status</th>
-                    <th style="width: 220px;">Updated At</th>
-                    <th style="width: 220px;">Actions</th>
+                    <th th:text="#{login.username}">Username</th>
+                    <th style="width: 140px;" th:text="#{admin.users.role}">Role</th>
+                    <th style="width: 120px;" th:text="#{admin.users.status}">Status</th>
+                    <th style="width: 220px;" th:text="#{admin.users.updatedAt}">Updated At</th>
+                    <th style="width: 220px;" th:text="#{common.actions}">Actions</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -44,16 +46,16 @@
                     <td th:text="${user.username}">admin</td>
                     <td th:text="${user.role}">ROLE_ADMIN</td>
                     <td>
-                        <span th:if="${user.enabled}" class="badge bg-success">Enabled</span>
-                        <span th:if="${!user.enabled}" class="badge bg-secondary">Disabled</span>
+                        <span th:if="${user.enabled}" class="badge bg-success" th:text="#{admin.users.enabled}">Enabled</span>
+                        <span th:if="${!user.enabled}" class="badge bg-secondary" th:text="#{admin.users.disabled}">Disabled</span>
                     </td>
                     <td th:text="${user.updatedAt != null ? #temporals.format(user.updatedAt, 'yyyy-MM-dd HH:mm:ss') : '-'}">-</td>
                     <td class="d-flex gap-2">
                         <a class="btn btn-outline-primary btn-sm"
-                           th:href="@{/admin/users/{id}/edit(id=${user.id})}" href="/admin/users/1/edit">Edit</a>
+                           th:href="@{/admin/users/{id}/edit(id=${user.id})}" href="/admin/users/1/edit" th:text="#{common.edit}">Edit</a>
                         <form th:action="@{/admin/users/{id}/delete(id=${user.id})}" method="post"
                               onsubmit="return confirm('Delete this user and related todos?');">
-                            <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
+                            <button type="submit" class="btn btn-outline-danger btn-sm" th:text="#{common.delete}">Delete</button>
                         </form>
                     </td>
                 </tr>
@@ -64,6 +66,3 @@
 </div>
 </body>
 </html>
-
-
-

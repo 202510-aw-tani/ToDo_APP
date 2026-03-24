@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>ToDo新規登録</title>
+    <title th:text="#{todo.form.title}">ToDo新規登録</title>
     <link
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
         rel="stylesheet"
@@ -13,47 +13,52 @@
 </head>
 <body class="bg-light">
 <div class="container py-4">
+    <div class="d-flex justify-content-end mb-2 gap-2">
+        <span class="text-muted small" th:text="#{common.language}">Language</span>
+        <a th:href="@{/todo/new(lang='ja')}" class="small" th:text="#{lang.ja}">日本語</a>
+        <a th:href="@{/todo/new(lang='en')}" class="small" th:text="#{lang.en}">English</a>
+    </div>
     <div class="d-flex align-items-center justify-content-between mb-3">
-        <h1 class="h3 mb-0">ToDo新規登録</h1>
-        <a class="btn btn-outline-secondary" href="/todo">戻る</a>
+        <h1 class="h3 mb-0" th:text="#{todo.form.heading}">ToDo新規登録</h1>
+        <a class="btn btn-outline-secondary" href="/todo" th:text="#{common.back}">戻る</a>
     </div>
 
     <div class="card shadow-sm">
         <div class="card-body">
             <form th:action="@{/todo/confirm}" action="/todo/confirm" method="post">
                 <div class="mb-3">
-                    <label for="title" class="form-label">タイトル</label>
-                    <input type="text" id="title" name="title" class="form-control" placeholder="例: 買い物に行く">
+                    <label for="title" class="form-label" th:text="#{todo.form.label.title}">タイトル</label>
+                    <input type="text" id="title" name="title" class="form-control" placeholder="Task title">
                 </div>
                 <div class="mb-3">
-                    <label for="priority" class="form-label">優先度</label>
+                    <label for="priority" class="form-label" th:text="#{todo.form.label.priority}">優先度</label>
                     <select id="priority" name="priority" class="form-select">
                         <option th:each="p : ${T(com.example.todo.model.Priority).values()}"
                                 th:value="${p}"
-                                th:text="${p.label}"
+                                th:text="${#messages.msg('priority.' + p.name())}"
                                 th:selected="${p == T(com.example.todo.model.Priority).MEDIUM}">
-                            中
+                            Medium
                         </option>
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label for="categoryId" class="form-label">カテゴリ</label>
+                    <label for="categoryId" class="form-label" th:text="#{todo.form.label.category}">カテゴリ</label>
                     <select id="categoryId" name="categoryId" class="form-select">
-                        <option value="">未選択</option>
+                        <option value="" th:text="#{common.notSelected}">未選択</option>
                         <option th:each="category : ${categories}"
                                 th:value="${category.id}"
                                 th:text="${category.name}">
-                            カテゴリ
+                            Category
                         </option>
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label for="deadline" class="form-label">期限日</label>
+                    <label for="deadline" class="form-label" th:text="#{todo.form.label.deadline}">期限日</label>
                     <input type="date" id="deadline" name="deadline" class="form-control">
                 </div>
                 <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary">確認画面へ</button>
-                    <a class="btn btn-outline-secondary" href="/todo">戻る</a>
+                    <button type="submit" class="btn btn-primary" th:text="#{todo.form.submit}">確認画面へ</button>
+                    <a class="btn btn-outline-secondary" href="/todo" th:text="#{common.back}">戻る</a>
                 </div>
             </form>
         </div>
@@ -61,5 +66,3 @@
 </div>
 </body>
 </html>
-
-

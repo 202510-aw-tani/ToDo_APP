@@ -5,16 +5,19 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
-import org.springframework.core.io.Resource;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,13 +26,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import org.springframework.http.ContentDisposition;
 
+import com.example.todo.exception.TodoNotFoundException;
 import com.example.todo.model.Category;
 import com.example.todo.model.Priority;
-import com.example.todo.model.TodoAttachment;
 import com.example.todo.model.Todo;
-import com.example.todo.exception.TodoNotFoundException;
+import com.example.todo.model.TodoAttachment;
 import com.example.todo.security.LoginUserPrincipal;
 import com.example.todo.service.CategoryService;
 import com.example.todo.service.TodoAttachmentService;
@@ -42,12 +44,14 @@ public class TodoController {
     private final TodoService todoService;
     private final CategoryService categoryService;
     private final TodoAttachmentService todoAttachmentService;
+    private final MessageSource messageSource;
 
     public TodoController(TodoService todoService, CategoryService categoryService,
-            TodoAttachmentService todoAttachmentService) {
+            TodoAttachmentService todoAttachmentService, MessageSource messageSource) {
         this.todoService = todoService;
         this.categoryService = categoryService;
         this.todoAttachmentService = todoAttachmentService;
+        this.messageSource = messageSource;
     }
 
     @GetMapping
@@ -122,7 +126,7 @@ public class TodoController {
         if (!deleted) {
             throw new TodoNotFoundException(id);
         }
-        redirectAttributes.addFlashAttribute("successMessage", "ToDoを削除しました。");
+        redirectAttributes.addFlashAttribute("successMessage", message("todo.message.deleted"));
         return "redirect:/todo";
     }
 
@@ -133,9 +137,9 @@ public class TodoController {
             RedirectAttributes redirectAttributes) {
         int deleted = todoService.deleteByIds(ids, loginUser.getId(), loginUser.isAdmin());
         if (deleted > 0) {
-            redirectAttributes.addFlashAttribute("successMessage", deleted + "件のToDoを削除しました。");
+            redirectAttributes.addFlashAttribute("successMessage", message("todo.message.bulkDeleted", deleted));
         } else {
-            redirectAttributes.addFlashAttribute("errorMessage", "削除対象のToDoが選択されていません。");
+            redirectAttributes.addFlashAttribute("errorMessage", message("todo.message.bulkDeleteEmpty"));
         }
         return "redirect:/todo";
     }
@@ -183,12 +187,12 @@ public class TodoController {
         }
 
         if (file == null || file.isEmpty()) {
-            redirectAttributes.addFlashAttribute("errorMessage", "ファイルを選択してください。");
+            redirectAttributes.addFlashAttribute("errorMessage", message("todo.message.selectFile"));
             return "redirect:/todo/" + id + "/edit";
         }
 
         todoAttachmentService.upload(id, file);
-        redirectAttributes.addFlashAttribute("successMessage", "添付ファイルをアップロードしました。");
+        redirectAttributes.addFlashAttribute("successMessage", message("todo.message.attachmentUploaded"));
         return "redirect:/todo/" + id + "/edit";
     }
 
@@ -242,9 +246,9 @@ public class TodoController {
 
         boolean deleted = todoAttachmentService.deleteById(attachmentId);
         if (deleted) {
-            redirectAttributes.addFlashAttribute("successMessage", "添付ファイルを削除しました。");
+            redirectAttributes.addFlashAttribute("successMessage", message("todo.message.attachmentDeleted"));
         } else {
-            redirectAttributes.addFlashAttribute("errorMessage", "添付ファイルの削除に失敗しました。");
+            redirectAttributes.addFlashAttribute("errorMessage", message("todo.message.attachmentDeleteFailed"));
         }
         return "redirect:/todo/" + attachment.getTodoId() + "/edit";
     }
@@ -263,7 +267,7 @@ public class TodoController {
         if (!updated) {
             throw new TodoNotFoundException(id);
         }
-        redirectAttributes.addFlashAttribute("successMessage", "ToDoを更新しました。");
+        redirectAttributes.addFlashAttribute("successMessage", message("todo.message.updated"));
         return "redirect:/todo";
     }
 
@@ -280,9 +284,11 @@ public class TodoController {
 
     private String buildCsv(List<Todo> todos) {
         StringBuilder sb = new StringBuilder();
-        sb.append("ID,タイトル,作成者,状態,作成日").append("\r\n");
+        sb.append("ID,Title,Created By,Status,Created At").append("\r\n");
         for (Todo todo : todos) {
-            String status = Boolean.TRUE.equals(todo.getCompleted()) ? "完了" : "未完了";
+            String status = Boolean.TRUE.equals(todo.getCompleted())
+                    ? message("todo.list.status.done")
+                    : message("todo.list.status.notDone");
             String createdAt = todo.getCreatedAt() != null ? todo.getCreatedAt().toString() : "";
             sb.append(escapeCsv(String.valueOf(todo.getId()))).append(',')
                     .append(escapeCsv(todo.getTitle())).append(',')
@@ -301,5 +307,9 @@ public class TodoController {
                 || value.contains("\r");
         String escaped = value.replace("\"", "\"\"");
         return needsQuote ? "\"" + escaped + "\"" : escaped;
+    }
+
+    private String message(String code, Object... args) {
+        return messageSource.getMessage(code, args, LocaleContextHolder.getLocale());
     }
 }
