@@ -56,6 +56,53 @@ public class TodoService {
         return admin ? todoMapper.findAll() : todoMapper.findAllByUserId(userId);
     }
 
+    public List<Todo> findAllForApi() {
+        return todoMapper.findAll();
+    }
+
+    public Todo findByIdForApi(Long id) {
+        return todoMapper.findById(id);
+    }
+
+    public Todo createForApi(String title, boolean completed, Priority priority, Long categoryId, LocalDate deadline) {
+        Todo todo = new Todo();
+        todo.setTitle(title);
+        todo.setCompleted(completed);
+        todo.setPriority(priority != null ? priority : Priority.MEDIUM);
+        todo.setUserId(null);
+        todo.setCategoryId(categoryId);
+        todo.setDeadline(deadline);
+        todo.setCreatedBy("api");
+        todo.setCreatedAt(LocalDate.now());
+        todoMapper.insert(todo);
+        return todoMapper.findById(todo.getId());
+    }
+
+    public Todo updateForApi(Long id, String title, boolean completed, Priority priority, Long categoryId,
+            LocalDate deadline) {
+        Todo current = todoMapper.findById(id);
+        if (current == null) {
+            return null;
+        }
+        Todo todo = new Todo();
+        todo.setId(id);
+        todo.setTitle(title);
+        todo.setCompleted(completed);
+        todo.setPriority(priority != null ? priority : Priority.MEDIUM);
+        todo.setUserId(current.getUserId());
+        todo.setCategoryId(categoryId);
+        todo.setDeadline(deadline);
+        int updated = todoMapper.updateById(todo);
+        if (updated == 0) {
+            return null;
+        }
+        return todoMapper.findById(id);
+    }
+
+    public boolean deleteForApi(Long id) {
+        return todoMapper.deleteById(id) > 0;
+    }
+
     public Todo findByIdForAccess(Long id, Long userId, boolean admin) {
         return admin ? todoMapper.findById(id) : todoMapper.findByIdAndUserId(id, userId);
     }
