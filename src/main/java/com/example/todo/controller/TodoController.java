@@ -14,20 +14,25 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
+import org.springframework.core.io.Resource;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.http.ContentDisposition;
 
 import com.example.todo.model.Category;
 import com.example.todo.model.Priority;
+import com.example.todo.model.TodoAttachment;
 import com.example.todo.model.Todo;
 import com.example.todo.exception.TodoNotFoundException;
 import com.example.todo.security.LoginUserPrincipal;
 import com.example.todo.service.CategoryService;
+import com.example.todo.service.TodoAttachmentService;
 import com.example.todo.service.TodoService;
 
 @Controller
@@ -36,10 +41,13 @@ public class TodoController {
 
     private final TodoService todoService;
     private final CategoryService categoryService;
+    private final TodoAttachmentService todoAttachmentService;
 
-    public TodoController(TodoService todoService, CategoryService categoryService) {
+    public TodoController(TodoService todoService, CategoryService categoryService,
+            TodoAttachmentService todoAttachmentService) {
         this.todoService = todoService;
         this.categoryService = categoryService;
+        this.todoAttachmentService = todoAttachmentService;
     }
 
     @GetMapping
@@ -159,7 +167,86 @@ public class TodoController {
         }
         model.addAttribute("todo", todo);
         model.addAttribute("categories", categoryService.findAll());
+        model.addAttribute("attachments", todoAttachmentService.findByTodoId(id));
         return "todo/edit";
+    }
+
+    @PostMapping("/{id}/attachments")
+    @PreAuthorize("hasRole('ADMIN') or @todoSecurityService.isOwner(#id, principal)")
+    public String uploadAttachment(@PathVariable("id") Long id,
+            @RequestParam("file") MultipartFile file,
+            @AuthenticationPrincipal LoginUserPrincipal loginUser,
+            RedirectAttributes redirectAttributes) {
+        Todo todo = todoService.findByIdForAccess(id, loginUser.getId(), loginUser.isAdmin());
+        if (todo == null) {
+            throw new TodoNotFoundException(id);
+        }
+
+        if (file == null || file.isEmpty()) {
+            redirectAttributes.addFlashAttribute("errorMessage", "ファイルを選択してください。");
+            return "redirect:/todo/" + id + "/edit";
+        }
+
+        todoAttachmentService.upload(id, file);
+        redirectAttributes.addFlashAttribute("successMessage", "添付ファイルをアップロードしました。");
+        return "redirect:/todo/" + id + "/edit";
+    }
+
+    @GetMapping("/attachments/{attachmentId}/download")
+    public ResponseEntity<Resource> downloadAttachment(@PathVariable("attachmentId") Long attachmentId,
+            @AuthenticationPrincipal LoginUserPrincipal loginUser) {
+        TodoAttachmentService.AttachmentDownload attachmentDownload = todoAttachmentService.loadForDownload(attachmentId);
+        if (attachmentDownload == null) {
+            throw new TodoNotFoundException(attachmentId);
+        }
+
+        TodoAttachment attachment = attachmentDownload.attachment();
+        Todo todo = todoService.findByIdForAccess(attachment.getTodoId(), loginUser.getId(), loginUser.isAdmin());
+        if (todo == null) {
+            throw new TodoNotFoundException(attachment.getTodoId());
+        }
+
+        MediaType mediaType = MediaType.APPLICATION_OCTET_STREAM;
+        if (attachment.getContentType() != null && !attachment.getContentType().isBlank()) {
+            try {
+                mediaType = MediaType.parseMediaType(attachment.getContentType());
+            } catch (IllegalArgumentException ignored) {
+                mediaType = MediaType.APPLICATION_OCTET_STREAM;
+            }
+        }
+
+        ContentDisposition contentDisposition = ContentDisposition.attachment()
+                .filename(attachment.getOriginalFilename(), StandardCharsets.UTF_8)
+                .build();
+
+        return ResponseEntity.ok()
+                .contentType(mediaType)
+                .contentLength(attachment.getFileSize())
+                .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString())
+                .body(attachmentDownload.resource());
+    }
+
+    @PostMapping("/attachments/{attachmentId}/delete")
+    public String deleteAttachment(@PathVariable("attachmentId") Long attachmentId,
+            @AuthenticationPrincipal LoginUserPrincipal loginUser,
+            RedirectAttributes redirectAttributes) {
+        TodoAttachment attachment = todoAttachmentService.findById(attachmentId);
+        if (attachment == null) {
+            throw new TodoNotFoundException(attachmentId);
+        }
+
+        Todo todo = todoService.findByIdForAccess(attachment.getTodoId(), loginUser.getId(), loginUser.isAdmin());
+        if (todo == null) {
+            throw new TodoNotFoundException(attachment.getTodoId());
+        }
+
+        boolean deleted = todoAttachmentService.deleteById(attachmentId);
+        if (deleted) {
+            redirectAttributes.addFlashAttribute("successMessage", "添付ファイルを削除しました。");
+        } else {
+            redirectAttributes.addFlashAttribute("errorMessage", "添付ファイルの削除に失敗しました。");
+        }
+        return "redirect:/todo/" + attachment.getTodoId() + "/edit";
     }
 
     @PostMapping("/{id}/update")

@@ -7,6 +7,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 @ControllerAdvice(basePackages = "com.example.todo.controller")
 public class GlobalExceptionHandler {
@@ -29,6 +30,14 @@ public class GlobalExceptionHandler {
         return "error/500";
     }
 
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    @ResponseStatus(HttpStatus.PAYLOAD_TOO_LARGE)
+    public String handleMaxUploadSizeExceeded(MaxUploadSizeExceededException ex, Model model) {
+        log.warn("Upload file too large: {}", ex.getMessage());
+        model.addAttribute("message", "アップロード可能なファイルサイズ上限は10MBです。");
+        return "error/500";
+    }
+
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public String handleException(Exception ex, Model model) {
@@ -37,4 +46,3 @@ public class GlobalExceptionHandler {
         return "error/500";
     }
 }
-

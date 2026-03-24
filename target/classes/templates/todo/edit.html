@@ -13,6 +13,13 @@
 </head>
 <body class="bg-light">
 <div class="container py-4">
+    <div th:if="${successMessage}" class="alert alert-success" role="alert">
+        <span th:text="${successMessage}">更新しました。</span>
+    </div>
+    <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+        <span th:text="${errorMessage}">エラーが発生しました。</span>
+    </div>
+
     <div class="d-flex align-items-center justify-content-between mb-3">
         <h1 class="h3 mb-0">ToDo編集</h1>
         <a class="btn btn-outline-secondary" href="/todo">戻る</a>
@@ -59,6 +66,59 @@
                     <a class="btn btn-outline-secondary" href="/todo">戻る</a>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mt-3">
+        <div class="card-header">添付ファイル</div>
+        <div class="card-body">
+            <form th:action="@{/todo/{id}/attachments(id=${todo.id})}"
+                  action="/todo/1/attachments"
+                  method="post"
+                  enctype="multipart/form-data"
+                  class="row g-2 align-items-center mb-3">
+                <div class="col-12 col-md">
+                    <input type="file" name="file" class="form-control" required>
+                </div>
+                <div class="col-12 col-md-auto">
+                    <button type="submit" class="btn btn-primary">アップロード</button>
+                </div>
+            </form>
+
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0">
+                    <thead>
+                    <tr>
+                        <th>ファイル名</th>
+                        <th style="width: 140px;">サイズ</th>
+                        <th style="width: 200px;">アップロード日時</th>
+                        <th style="width: 180px;">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:if="${#lists.isEmpty(attachments)}">
+                        <td colspan="4" class="text-muted">添付ファイルはありません。</td>
+                    </tr>
+                    <tr th:each="attachment : ${attachments}">
+                        <td th:text="${attachment.originalFilename}">sample.txt</td>
+                        <td th:text="${attachment.fileSize + ' bytes'}">0 bytes</td>
+                        <td th:text="${#temporals.format(attachment.uploadedAt, 'yyyy-MM-dd HH:mm:ss')}">2026-01-01 12:00:00</td>
+                        <td>
+                            <a class="btn btn-outline-secondary btn-sm"
+                               th:href="@{/todo/attachments/{attachmentId}/download(attachmentId=${attachment.id})}">
+                                ダウンロード
+                            </a>
+                            <form th:action="@{/todo/attachments/{attachmentId}/delete(attachmentId=${attachment.id})}"
+                                  method="post"
+                                  class="d-inline"
+                                  onsubmit="return confirm('この添付ファイルを削除しますか？')">
+                                <button type="submit" class="btn btn-outline-danger btn-sm">削除</button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>

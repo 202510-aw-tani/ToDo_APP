@@ -54,3 +54,14 @@ CREATE TABLE IF NOT EXISTS audit_logs (
     actor VARCHAR(100) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS todo_attachments (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    todo_id BIGINT NOT NULL,
+    original_filename VARCHAR(255) NOT NULL,
+    stored_filename VARCHAR(255) NOT NULL UNIQUE,
+    content_type VARCHAR(255),
+    file_size BIGINT NOT NULL,
+    uploaded_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_todo_attachments_todo FOREIGN KEY (todo_id) REFERENCES todos(id) ON DELETE CASCADE
+);

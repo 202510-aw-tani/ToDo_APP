@@ -14,6 +14,7 @@ C:\academia\src\ToDo_APP\src\main\java\com\example\todo\exception\TodoNotFoundEx
 C:\academia\src\ToDo_APP\src\main\java\com\example\todo\form\RegisterForm.java
 C:\academia\src\ToDo_APP\src\main\java\com\example\todo\mapper\AuditLogMapper.java
 C:\academia\src\ToDo_APP\src\main\java\com\example\todo\mapper\CategoryMapper.java
+C:\academia\src\ToDo_APP\src\main\java\com\example\todo\mapper\TodoAttachmentMapper.java
 C:\academia\src\ToDo_APP\src\main\java\com\example\todo\mapper\TodoHistoryMapper.java
 C:\academia\src\ToDo_APP\src\main\java\com\example\todo\mapper\TodoMapper.java
 C:\academia\src\ToDo_APP\src\main\java\com\example\todo\mapper\UserMapper.java
@@ -22,6 +23,7 @@ C:\academia\src\ToDo_APP\src\main\java\com\example\todo\model\AuditLog.java
 C:\academia\src\ToDo_APP\src\main\java\com\example\todo\model\Category.java
 C:\academia\src\ToDo_APP\src\main\java\com\example\todo\model\Priority.java
 C:\academia\src\ToDo_APP\src\main\java\com\example\todo\model\Todo.java
+C:\academia\src\ToDo_APP\src\main\java\com\example\todo\model\TodoAttachment.java
 C:\academia\src\ToDo_APP\src\main\java\com\example\todo\model\TodoHistory.java
 C:\academia\src\ToDo_APP\src\main\java\com\example\todo\security\CustomUserDetailsService.java
 C:\academia\src\ToDo_APP\src\main\java\com\example\todo\security\LoginUserPrincipal.java
@@ -30,6 +32,8 @@ C:\academia\src\ToDo_APP\src\main\java\com\example\todo\security\TodoSecuritySer
 C:\academia\src\ToDo_APP\src\main\java\com\example\todo\security\UserDataInitializer.java
 C:\academia\src\ToDo_APP\src\main\java\com\example\todo\service\AuditLogService.java
 C:\academia\src\ToDo_APP\src\main\java\com\example\todo\service\CategoryService.java
+C:\academia\src\ToDo_APP\src\main\java\com\example\todo\service\FileStorageService.java
+C:\academia\src\ToDo_APP\src\main\java\com\example\todo\service\TodoAttachmentService.java
 C:\academia\src\ToDo_APP\src\main\java\com\example\todo\service\TodoService.java
 C:\academia\src\ToDo_APP\src\main\java\com\example\todo\service\UserService.java
 C:\academia\src\ToDo_APP\src\main\java\com\example\todo\TodoApplication.java

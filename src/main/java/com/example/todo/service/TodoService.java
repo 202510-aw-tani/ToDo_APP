@@ -23,11 +23,14 @@ public class TodoService {
     private final TodoMapper todoMapper;
     private final TodoHistoryMapper todoHistoryMapper;
     private final AuditLogService auditLogService;
+    private final TodoAttachmentService todoAttachmentService;
 
-    public TodoService(TodoMapper todoMapper, TodoHistoryMapper todoHistoryMapper, AuditLogService auditLogService) {
+    public TodoService(TodoMapper todoMapper, TodoHistoryMapper todoHistoryMapper, AuditLogService auditLogService,
+            TodoAttachmentService todoAttachmentService) {
         this.todoMapper = todoMapper;
         this.todoHistoryMapper = todoHistoryMapper;
         this.auditLogService = auditLogService;
+        this.todoAttachmentService = todoAttachmentService;
     }
 
     @Transactional(rollbackFor = Exception.class, noRollbackFor = BusinessException.class)
@@ -138,6 +141,7 @@ public class TodoService {
         String actor = "api";
         auditLogService.record("TODO_DELETE_API_START", "todoId=" + id, actor);
 
+        todoAttachmentService.deleteAllByTodoId(id);
         boolean deleted = todoMapper.deleteById(id) > 0;
         if (deleted) {
             saveHistory(id, "DELETE", "api delete", actor);
@@ -156,6 +160,7 @@ public class TodoService {
         String actor = normalizeActor(null, userId);
         auditLogService.record("TODO_DELETE_START", "todoId=" + id, actor);
 
+        todoAttachmentService.deleteAllByTodoId(id);
         boolean deleted = admin ? todoMapper.deleteById(id) > 0 : todoMapper.deleteByIdAndUserId(id, userId) > 0;
         if (deleted) {
             saveHistory(id, "DELETE", "deleted by user", actor);
@@ -173,6 +178,11 @@ public class TodoService {
         String actor = normalizeActor(null, userId);
         auditLogService.record("TODO_BULK_DELETE_START", "count=" + ids.size(), actor);
 
+        for (Integer id : ids) {
+            if (id != null) {
+                todoAttachmentService.deleteAllByTodoId(id.longValue());
+            }
+        }
         int deleted = admin ? todoMapper.deleteByIds(ids) : todoMapper.deleteByIdsAndUserId(ids, userId);
         if (deleted > 0) {
             auditLogService.record("TODO_BULK_DELETE_SUCCESS", "deleted=" + deleted, actor);
