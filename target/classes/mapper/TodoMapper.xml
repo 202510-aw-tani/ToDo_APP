@@ -219,4 +219,9 @@
         WHERE user_id IS NULL
     </update>
 
+    <delete id="deleteByUserId">
+        DELETE FROM todos
+        WHERE user_id = #{userId}
+    </delete>
+
 </mapper>

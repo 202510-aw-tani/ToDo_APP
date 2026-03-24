@@ -20,4 +20,11 @@ public interface UserMapper {
     int updateRoleAndEnabled(@Param("id") Long id,
             @Param("role") String role,
             @Param("enabled") boolean enabled);
+
+    int updateByAdmin(@Param("id") Long id,
+            @Param("role") String role,
+            @Param("enabled") boolean enabled,
+            @Param("password") String password);
+
+    int deleteById(@Param("id") Long id);
 }

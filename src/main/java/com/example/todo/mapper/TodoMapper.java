@@ -51,4 +51,6 @@ public interface TodoMapper {
     int updateByIdAndUserId(Todo todo);
 
     int assignUnownedTodosToUser(@Param("userId") Long userId);
+
+    int deleteByUserId(@Param("userId") Long userId);
 }

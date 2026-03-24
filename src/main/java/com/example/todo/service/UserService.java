@@ -3,7 +3,11 @@ package com.example.todo.service;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.util.StringUtils;
 
+import com.example.todo.mapper.TodoMapper;
 import com.example.todo.mapper.UserMapper;
 import com.example.todo.model.AppUser;
 
@@ -11,9 +15,13 @@ import com.example.todo.model.AppUser;
 public class UserService {
 
     private final UserMapper userMapper;
+    private final TodoMapper todoMapper;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserMapper userMapper) {
+    public UserService(UserMapper userMapper, TodoMapper todoMapper, PasswordEncoder passwordEncoder) {
         this.userMapper = userMapper;
+        this.todoMapper = todoMapper;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public List<AppUser> findAll() {
@@ -31,6 +39,43 @@ public class UserService {
         }
         String normalizedRole = normalizeRole(role);
         return userMapper.updateRoleAndEnabled(id, normalizedRole, enabled) > 0;
+    }
+
+    public boolean existsByUsername(String username) {
+        if (!StringUtils.hasText(username)) {
+            return false;
+        }
+        return userMapper.countByUsername(username.trim()) > 0;
+    }
+
+    public AppUser register(String username, String rawPassword) {
+        AppUser user = new AppUser();
+        user.setUsername(username.trim());
+        user.setPassword(passwordEncoder.encode(rawPassword));
+        user.setRole("ROLE_USER");
+        user.setEnabled(true);
+        userMapper.insert(user);
+        return userMapper.findById(user.getId());
+    }
+
+    public boolean updateByAdmin(Long id, String role, boolean enabled, String newPassword) {
+        AppUser user = userMapper.findById(id);
+        if (user == null) {
+            return false;
+        }
+        String normalizedRole = normalizeRole(role);
+        String encodedPassword = StringUtils.hasText(newPassword) ? passwordEncoder.encode(newPassword) : null;
+        return userMapper.updateByAdmin(id, normalizedRole, enabled, encodedPassword) > 0;
+    }
+
+    @Transactional
+    public boolean deleteUserAndTodos(Long id) {
+        AppUser user = userMapper.findById(id);
+        if (user == null) {
+            return false;
+        }
+        todoMapper.deleteByUserId(id);
+        return userMapper.deleteById(id) > 0;
     }
 
     private String normalizeRole(String role) {

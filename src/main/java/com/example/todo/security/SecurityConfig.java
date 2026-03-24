@@ -20,7 +20,8 @@ public class SecurityConfig {
                 .headers(headers -> headers
                         .frameOptions(frame -> frame.sameOrigin()))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login", "/h2-console/**", "/css/**", "/js/**", "/images/**", "/webjars/**")
+                        .requestMatchers("/login", "/register", "/h2-console/**", "/css/**", "/js/**", "/images/**",
+                                "/webjars/**")
                         .permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())

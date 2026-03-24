@@ -3,34 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>ユーザー編集</title>
-    <link
-            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-            rel="stylesheet"
-            integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
-            crossorigin="anonymous"
-    >
+    <title>Edit User</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
 <div class="container py-4">
     <div class="d-flex align-items-center justify-content-between mb-3">
-        <h1 class="h3 mb-0">ユーザー編集</h1>
-        <a class="btn btn-outline-secondary" th:href="@{/admin/users}" href="/admin/users">戻る</a>
+        <h1 class="h3 mb-0">Edit User</h1>
+        <a class="btn btn-outline-secondary" th:href="@{/admin/users}" href="/admin/users">Back</a>
     </div>
 
-    <div class="card shadow-sm">
+    <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+        <span th:text="${errorMessage}">Error</span>
+    </div>
+
+    <div class="card shadow-sm mb-3">
         <div class="card-body">
-            <form th:action="@{/admin/users/{id}/update(id=${user.id})}" action="/admin/users/1/update" method="post">
+            <form th:action="@{/admin/users/{id}/update(id=${user.id})}" method="post">
                 <div class="mb-3">
                     <label class="form-label">ID</label>
-                    <input type="text" class="form-control" th:value="${user.id}" value="1" readonly>
+                    <input type="text" class="form-control" th:value="${user.id}" readonly>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">ユーザー名</label>
-                    <input type="text" class="form-control" th:value="${user.username}" value="admin" readonly>
+                    <label class="form-label">Username</label>
+                    <input type="text" class="form-control" th:value="${user.username}" readonly>
                 </div>
                 <div class="mb-3">
-                    <label for="role" class="form-label">ロール</label>
+                    <label for="role" class="form-label">Role</label>
                     <select id="role" name="role" class="form-select">
                         <option value="ROLE_USER" th:selected="${user.role == 'ROLE_USER'}">USER</option>
                         <option value="ROLE_ADMIN" th:selected="${user.role == 'ROLE_ADMIN'}">ADMIN</option>
@@ -38,12 +37,36 @@
                 </div>
                 <div class="form-check mb-3">
                     <input class="form-check-input" type="checkbox" id="enabled" name="enabled" th:checked="${user.enabled}">
-                    <label class="form-check-label" for="enabled">アカウント有効</label>
+                    <label class="form-check-label" for="enabled">Enabled</label>
                 </div>
-                <button type="submit" class="btn btn-primary">更新</button>
+
+                <hr>
+                <h2 class="h5">Password Reset (Optional)</h2>
+                <div class="mb-3">
+                    <label for="newPassword" class="form-label">New Password</label>
+                    <input id="newPassword" name="newPassword" type="password" class="form-control" minlength="8">
+                </div>
+                <div class="mb-3">
+                    <label for="confirmPassword" class="form-label">Confirm New Password</label>
+                    <input id="confirmPassword" name="confirmPassword" type="password" class="form-control" minlength="8">
+                </div>
+
+                <button type="submit" class="btn btn-primary">Save</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card border-danger shadow-sm">
+        <div class="card-body">
+            <h2 class="h5 text-danger">Delete User</h2>
+            <p class="text-muted mb-3">This deletes the user and all related todos.</p>
+            <form th:action="@{/admin/users/{id}/delete(id=${user.id})}" method="post"
+                  onsubmit="return confirm('Delete this user and related todos?');">
+                <button type="submit" class="btn btn-danger">Delete User</button>
             </form>
         </div>
     </div>
 </div>
 </body>
 </html>
+
