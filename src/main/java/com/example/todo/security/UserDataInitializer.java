@@ -3,6 +3,7 @@ package com.example.todo.security;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import com.example.todo.mapper.TodoMapper;
 import com.example.todo.mapper.UserMapper;
@@ -23,8 +24,8 @@ public class UserDataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        AppUser admin = ensureUser("admin", "admin123", "ROLE_ADMIN");
-        ensureUser("user", "user123", "ROLE_USER");
+        AppUser admin = ensureUser("admin", "admin@example.com", "admin123", "ROLE_ADMIN");
+        ensureUser("user", "user@example.com", "user123", "ROLE_USER");
 
         if (admin != null && !Boolean.TRUE.equals(admin.getEnabled())) {
             userMapper.updateRoleAndEnabled(admin.getId(), "ROLE_ADMIN", true);
@@ -40,14 +41,19 @@ public class UserDataInitializer implements CommandLineRunner {
         }
     }
 
-    private AppUser ensureUser(String username, String rawPassword, String role) {
+    private AppUser ensureUser(String username, String email, String rawPassword, String role) {
         AppUser existing = userMapper.findByUsername(username);
         if (existing != null) {
+            if (!StringUtils.hasText(existing.getEmail())) {
+                userMapper.updateEmailById(existing.getId(), email);
+                return userMapper.findByUsername(username);
+            }
             return existing;
         }
 
         AppUser user = new AppUser();
         user.setUsername(username);
+        user.setEmail(email);
         user.setPassword(passwordEncoder.encode(rawPassword));
         user.setRole(role);
         user.setEnabled(true);

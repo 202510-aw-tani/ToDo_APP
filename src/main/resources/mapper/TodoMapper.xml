@@ -40,6 +40,19 @@
         ORDER BY t.id
     </select>
 
+    <select id="findIncompleteByDeadlineRange" resultMap="TodoResultMap">
+        SELECT
+            t.id, t.title, t.completed, t.priority, t.user_id, t.deadline, t.category_id, t.created_by, t.created_at,
+            c.name AS category_name, c.color AS category_color
+        FROM todos t
+        LEFT JOIN categories c ON t.category_id = c.id
+        WHERE t.completed = FALSE
+          AND t.user_id IS NOT NULL
+          AND t.deadline IS NOT NULL
+          AND t.deadline BETWEEN #{startDate} AND #{endDate}
+        ORDER BY t.deadline, t.id
+    </select>
+
     <select id="findPage" resultMap="TodoResultMap">
         SELECT
             t.id, t.title, t.completed, t.priority, t.user_id, t.deadline, t.category_id, t.created_by, t.created_at,

@@ -36,8 +36,10 @@ C:\academia\src\ToDo_APP\src\main\java\com\example\todo\service\AsyncAlertServic
 C:\academia\src\ToDo_APP\src\main\java\com\example\todo\service\AuditLogService.java
 C:\academia\src\ToDo_APP\src\main\java\com\example\todo\service\CategoryService.java
 C:\academia\src\ToDo_APP\src\main\java\com\example\todo\service\FileStorageService.java
+C:\academia\src\ToDo_APP\src\main\java\com\example\todo\service\MailService.java
 C:\academia\src\ToDo_APP\src\main\java\com\example\todo\service\NotificationService.java
 C:\academia\src\ToDo_APP\src\main\java\com\example\todo\service\TodoAttachmentService.java
+C:\academia\src\ToDo_APP\src\main\java\com\example\todo\service\TodoReminderScheduler.java
 C:\academia\src\ToDo_APP\src\main\java\com\example\todo\service\TodoService.java
 C:\academia\src\ToDo_APP\src\main\java\com\example\todo\service\UserService.java
 C:\academia\src\ToDo_APP\src\main\java\com\example\todo\TodoApplication.java

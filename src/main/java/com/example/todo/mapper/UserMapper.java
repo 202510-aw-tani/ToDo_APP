@@ -26,5 +26,7 @@ public interface UserMapper {
             @Param("enabled") boolean enabled,
             @Param("password") String password);
 
+    int updateEmailById(@Param("id") Long id, @Param("email") String email);
+
     int deleteById(@Param("id") Long id);
 }

@@ -1,6 +1,7 @@
 package com.example.todo.mapper;
 
 import java.util.List;
+import java.time.LocalDate;
 
 import org.apache.ibatis.annotations.Param;
 
@@ -10,6 +11,9 @@ public interface TodoMapper {
     List<Todo> findAll();
 
     List<Todo> findAllByUserId(@Param("userId") Long userId);
+
+    List<Todo> findIncompleteByDeadlineRange(@Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate);
 
     List<Todo> findPage(@Param("limit") int limit,
             @Param("offset") int offset,

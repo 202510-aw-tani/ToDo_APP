@@ -7,6 +7,7 @@
     <resultMap id="UserResultMap" type="com.example.todo.model.AppUser">
         <id property="id" column="id" />
         <result property="username" column="username" />
+        <result property="email" column="email" />
         <result property="password" column="password" />
         <result property="role" column="role" />
         <result property="enabled" column="enabled" />
@@ -14,19 +15,19 @@
     </resultMap>
 
     <select id="findByUsername" resultMap="UserResultMap">
-        SELECT id, username, password, role, enabled, updated_at
+        SELECT id, username, email, password, role, enabled, updated_at
         FROM users
         WHERE username = #{username}
     </select>
 
     <select id="findAll" resultMap="UserResultMap">
-        SELECT id, username, password, role, enabled, updated_at
+        SELECT id, username, email, password, role, enabled, updated_at
         FROM users
         ORDER BY id
     </select>
 
     <select id="findById" resultMap="UserResultMap">
-        SELECT id, username, password, role, enabled, updated_at
+        SELECT id, username, email, password, role, enabled, updated_at
         FROM users
         WHERE id = #{id}
     </select>
@@ -39,8 +40,8 @@
 
     <insert id="insert" parameterType="com.example.todo.model.AppUser"
             useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO users (username, password, role, enabled, updated_at)
-        VALUES (#{username}, #{password}, #{role}, #{enabled}, CURRENT_TIMESTAMP)
+        INSERT INTO users (username, email, password, role, enabled, updated_at)
+        VALUES (#{username}, #{email}, #{password}, #{role}, #{enabled}, CURRENT_TIMESTAMP)
     </insert>
 
     <update id="updateRoleAndEnabled">
@@ -61,6 +62,13 @@
             </if>
             updated_at = CURRENT_TIMESTAMP
         </set>
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateEmailById">
+        UPDATE users
+        SET email = #{email},
+            updated_at = CURRENT_TIMESTAMP
         WHERE id = #{id}
     </update>
 

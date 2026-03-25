@@ -21,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.example.todo.mapper.TodoHistoryMapper;
 import com.example.todo.mapper.TodoMapper;
+import com.example.todo.mapper.UserMapper;
 import com.example.todo.model.Priority;
 import com.example.todo.model.Todo;
 
@@ -40,7 +41,13 @@ class TodoServiceTest {
     private TodoAttachmentService todoAttachmentService;
 
     @Mock
+    private UserMapper userMapper;
+
+    @Mock
     private NotificationService notificationService;
+
+    @Mock
+    private MailService mailService;
 
     @InjectMocks
     private TodoService todoService;
@@ -63,7 +70,7 @@ class TodoServiceTest {
 
         verify(todoMapper).insert(any(Todo.class));
         verify(todoHistoryMapper).insert(any());
-        verify(auditLogService, times(3)).record(any(), any(), eq("user1"));
+        verify(auditLogService, times(4)).record(any(), any(), eq("user1"));
     }
 
     @Test

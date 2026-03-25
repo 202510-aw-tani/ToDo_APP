@@ -16,10 +16,13 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import com.example.todo.exception.BusinessException;
 import com.example.todo.mapper.TodoHistoryMapper;
 import com.example.todo.mapper.TodoMapper;
+import com.example.todo.mapper.UserMapper;
+import com.example.todo.model.AppUser;
 import com.example.todo.model.Priority;
 import com.example.todo.model.Todo;
 import com.example.todo.model.TodoHistory;
@@ -32,17 +35,22 @@ public class TodoService {
 
     private final TodoMapper todoMapper;
     private final TodoHistoryMapper todoHistoryMapper;
+    private final UserMapper userMapper;
     private final AuditLogService auditLogService;
     private final TodoAttachmentService todoAttachmentService;
     private final NotificationService notificationService;
+    private final MailService mailService;
 
-    public TodoService(TodoMapper todoMapper, TodoHistoryMapper todoHistoryMapper, AuditLogService auditLogService,
-            TodoAttachmentService todoAttachmentService, NotificationService notificationService) {
+    public TodoService(TodoMapper todoMapper, TodoHistoryMapper todoHistoryMapper, UserMapper userMapper,
+            AuditLogService auditLogService, TodoAttachmentService todoAttachmentService,
+            NotificationService notificationService, MailService mailService) {
         this.todoMapper = todoMapper;
         this.todoHistoryMapper = todoHistoryMapper;
+        this.userMapper = userMapper;
         this.auditLogService = auditLogService;
         this.todoAttachmentService = todoAttachmentService;
         this.notificationService = notificationService;
+        this.mailService = mailService;
     }
 
     @Transactional(rollbackFor = Exception.class, noRollbackFor = BusinessException.class)
@@ -63,6 +71,7 @@ public class TodoService {
         todoMapper.insert(todo);
 
         saveHistory(todo.getId(), "CREATE", "title=" + title, actor);
+        queueTodoCreatedMail(userId, title, deadline, actor);
         executeAsyncFollowUp(todo.getId(), title, actor);
         auditLogService.record("TODO_CREATE_SUCCESS", "todoId=" + todo.getId(), actor);
     }
@@ -93,6 +102,11 @@ public class TodoService {
     @Transactional(readOnly = true)
     public List<Todo> findAllForApi() {
         return todoMapper.findAll();
+    }
+
+    @Transactional(readOnly = true)
+    public List<Todo> findIncompleteByDeadlineRange(LocalDate startDate, LocalDate endDate) {
+        return todoMapper.findIncompleteByDeadlineRange(startDate, endDate);
     }
 
     @Transactional(readOnly = true)
@@ -294,6 +308,21 @@ public class TodoService {
             auditLogService.record("TODO_ASYNC_FAILURE",
                     "todoId=" + todoId + ", reason=" + cause.getClass().getSimpleName(), actor);
         }
+    }
+
+    private void queueTodoCreatedMail(Long userId, String title, LocalDate deadline, String actor) {
+        if (userId == null) {
+            return;
+        }
+
+        AppUser user = userMapper.findById(userId);
+        if (user == null || !StringUtils.hasText(user.getEmail())) {
+            auditLogService.record("TODO_MAIL_SKIPPED", "reason=no_email,userId=" + userId, actor);
+            return;
+        }
+
+        mailService.sendTodoCreatedTextMail(user.getEmail(), user.getUsername(), title, deadline);
+        auditLogService.record("TODO_MAIL_QUEUED", "userId=" + userId + ", email=" + user.getEmail(), actor);
     }
 
     private String normalizeActor(String username, Long userId) {

@@ -49,8 +49,10 @@ public class UserService {
     }
 
     public AppUser register(String username, String rawPassword) {
+        String normalizedUsername = username.trim();
         AppUser user = new AppUser();
-        user.setUsername(username.trim());
+        user.setUsername(normalizedUsername);
+        user.setEmail(normalizedUsername + "@example.local");
         user.setPassword(passwordEncoder.encode(rawPassword));
         user.setRole("ROLE_USER");
         user.setEnabled(true);
