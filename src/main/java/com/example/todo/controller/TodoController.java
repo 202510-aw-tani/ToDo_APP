@@ -37,6 +37,17 @@ import com.example.todo.service.CategoryService;
 import com.example.todo.service.TodoAttachmentService;
 import com.example.todo.service.TodoService;
 
+/**
+ * ToDo画面のMVCコントローラーです。
+ *
+ * <p>{@code /todo} 配下の一覧、登録、編集、削除、CSV出力、
+ * 添付ファイル操作を提供します。</p>
+ *
+ * @author academia
+ * @version 1.0
+ * @since 1.0
+ * @see TodoService
+ */
 @Controller
 @RequestMapping("/todo")
 public class TodoController {
@@ -46,6 +57,14 @@ public class TodoController {
     private final TodoAttachmentService todoAttachmentService;
     private final MessageSource messageSource;
 
+    /**
+     * コンストラクタです。
+     *
+     * @param todoService ToDoサービス
+     * @param categoryService カテゴリサービス
+     * @param todoAttachmentService 添付ファイルサービス
+     * @param messageSource メッセージソース
+     */
     public TodoController(TodoService todoService, CategoryService categoryService,
             TodoAttachmentService todoAttachmentService, MessageSource messageSource) {
         this.todoService = todoService;
@@ -54,6 +73,18 @@ public class TodoController {
         this.messageSource = messageSource;
     }
 
+    /**
+     * HTTP GET {@code /todo}。
+     *
+     * <p>ToDo一覧をページング付きで表示します。</p>
+     *
+     * @param page ページ番号
+     * @param sort ソート種別
+     * @param categoryId カテゴリID
+     * @param loginUser ログインユーザー
+     * @param model 画面モデル
+     * @return 一覧テンプレート名
+     */
     @GetMapping
     public String list(@RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "sort", defaultValue = "id") String sort,
@@ -86,12 +117,32 @@ public class TodoController {
         return "todo/list";
     }
 
+    /**
+     * HTTP GET {@code /todo/new}。
+     *
+     * <p>ToDo新規作成フォームを表示します。</p>
+     *
+     * @param model 画面モデル
+     * @return フォームテンプレート名
+     */
     @GetMapping("/new")
     public String newTodo(Model model) {
         model.addAttribute("categories", categoryService.findAll());
         return "todo/form";
     }
 
+    /**
+     * HTTP POST {@code /todo/confirm}。
+     *
+     * <p>入力内容確認画面を表示します。</p>
+     *
+     * @param title タイトル
+     * @param priority 優先度
+     * @param categoryId カテゴリID
+     * @param deadline 期限日
+     * @param model 画面モデル
+     * @return 確認テンプレート名
+     */
     @PostMapping("/confirm")
     public String confirm(@RequestParam("title") String title,
             @RequestParam(name = "priority", defaultValue = "MEDIUM") Priority priority,
@@ -107,6 +158,18 @@ public class TodoController {
         return "todo/confirm";
     }
 
+    /**
+     * HTTP POST {@code /todo/complete}。
+     *
+     * <p>ToDoを登録して一覧画面へリダイレクトします。</p>
+     *
+     * @param title タイトル
+     * @param priority 優先度
+     * @param categoryId カテゴリID
+     * @param deadline 期限日
+     * @param loginUser ログインユーザー
+     * @return リダイレクト先
+     */
     @PostMapping("/complete")
     public String complete(@RequestParam("title") String title,
             @RequestParam(name = "priority", defaultValue = "MEDIUM") Priority priority,
@@ -117,6 +180,17 @@ public class TodoController {
         return "redirect:/todo";
     }
 
+    /**
+     * HTTP POST {@code /todo/{id}/delete}。
+     *
+     * <p>指定ToDoを削除します。</p>
+     *
+     * @param id ToDo ID
+     * @param loginUser ログインユーザー
+     * @param redirectAttributes リダイレクト属性
+     * @return リダイレクト先
+     * @throws TodoNotFoundException 対象ToDoが存在しない場合
+     */
     @PostMapping("/{id}/delete")
     @PreAuthorize("hasRole('ADMIN') or @todoSecurityService.isOwner(#id, principal)")
     public String delete(@PathVariable("id") Long id,
@@ -130,6 +204,16 @@ public class TodoController {
         return "redirect:/todo";
     }
 
+    /**
+     * HTTP POST {@code /todo/bulk-delete}。
+     *
+     * <p>選択されたToDoを一括削除します。</p>
+     *
+     * @param ids 削除対象ID一覧
+     * @param loginUser ログインユーザー
+     * @param redirectAttributes リダイレクト属性
+     * @return リダイレクト先
+     */
     @PostMapping("/bulk-delete")
     @PreAuthorize("hasRole('ADMIN') or @todoSecurityService.areAllOwned(#ids, principal)")
     public String bulkDelete(@RequestParam(name = "ids", required = false) List<Integer> ids,
@@ -144,6 +228,14 @@ public class TodoController {
         return "redirect:/todo";
     }
 
+    /**
+     * HTTP GET {@code /todo/export}。
+     *
+     * <p>ToDo一覧をCSVとしてダウンロードします。</p>
+     *
+     * @param loginUser ログインユーザー
+     * @return CSVレスポンス
+     */
     @GetMapping("/export")
     public ResponseEntity<byte[]> exportCsv(@AuthenticationPrincipal LoginUserPrincipal loginUser) {
         String csv = buildCsv(todoService.findAllForExport(loginUser.getId(), loginUser.isAdmin()));
@@ -160,6 +252,17 @@ public class TodoController {
         return ResponseEntity.ok().headers(headers).body(data);
     }
 
+    /**
+     * HTTP GET {@code /todo/{id}/edit}。
+     *
+     * <p>ToDo編集画面を表示します。</p>
+     *
+     * @param id ToDo ID
+     * @param loginUser ログインユーザー
+     * @param model 画面モデル
+     * @return 編集テンプレート名
+     * @throws TodoNotFoundException 対象ToDoが存在しない場合
+     */
     @GetMapping("/{id}/edit")
     @PreAuthorize("hasRole('ADMIN') or @todoSecurityService.isOwner(#id, principal)")
     public String edit(@PathVariable("id") Long id,
@@ -175,6 +278,18 @@ public class TodoController {
         return "todo/edit";
     }
 
+    /**
+     * HTTP POST {@code /todo/{id}/attachments}。
+     *
+     * <p>添付ファイルをアップロードします。</p>
+     *
+     * @param id ToDo ID
+     * @param file アップロードファイル
+     * @param loginUser ログインユーザー
+     * @param redirectAttributes リダイレクト属性
+     * @return リダイレクト先
+     * @throws TodoNotFoundException 対象ToDoが存在しない場合
+     */
     @PostMapping("/{id}/attachments")
     @PreAuthorize("hasRole('ADMIN') or @todoSecurityService.isOwner(#id, principal)")
     public String uploadAttachment(@PathVariable("id") Long id,
@@ -196,6 +311,16 @@ public class TodoController {
         return "redirect:/todo/" + id + "/edit";
     }
 
+    /**
+     * HTTP GET {@code /todo/attachments/{attachmentId}/download}。
+     *
+     * <p>添付ファイルをダウンロードします。</p>
+     *
+     * @param attachmentId 添付ファイルID
+     * @param loginUser ログインユーザー
+     * @return ファイルレスポンス
+     * @throws TodoNotFoundException 添付または紐付くToDoが存在しない場合
+     */
     @GetMapping("/attachments/{attachmentId}/download")
     public ResponseEntity<Resource> downloadAttachment(@PathVariable("attachmentId") Long attachmentId,
             @AuthenticationPrincipal LoginUserPrincipal loginUser) {
@@ -230,6 +355,17 @@ public class TodoController {
                 .body(attachmentDownload.resource());
     }
 
+    /**
+     * HTTP POST {@code /todo/attachments/{attachmentId}/delete}。
+     *
+     * <p>添付ファイルを削除します。</p>
+     *
+     * @param attachmentId 添付ファイルID
+     * @param loginUser ログインユーザー
+     * @param redirectAttributes リダイレクト属性
+     * @return リダイレクト先
+     * @throws TodoNotFoundException 添付または紐付くToDoが存在しない場合
+     */
     @PostMapping("/attachments/{attachmentId}/delete")
     public String deleteAttachment(@PathVariable("attachmentId") Long attachmentId,
             @AuthenticationPrincipal LoginUserPrincipal loginUser,
@@ -253,6 +389,21 @@ public class TodoController {
         return "redirect:/todo/" + attachment.getTodoId() + "/edit";
     }
 
+    /**
+     * HTTP POST {@code /todo/{id}/update}。
+     *
+     * <p>ToDoを更新します。</p>
+     *
+     * @param id ToDo ID
+     * @param title タイトル
+     * @param priority 優先度
+     * @param categoryId カテゴリID
+     * @param deadline 期限日
+     * @param loginUser ログインユーザー
+     * @param redirectAttributes リダイレクト属性
+     * @return リダイレクト先
+     * @throws TodoNotFoundException 対象ToDoが存在しない場合
+     */
     @PostMapping("/{id}/update")
     @PreAuthorize("hasRole('ADMIN') or @todoSecurityService.isOwner(#id, principal)")
     public String update(@PathVariable("id") Long id,
@@ -271,6 +422,16 @@ public class TodoController {
         return "redirect:/todo";
     }
 
+    /**
+     * HTTP POST {@code /todo/{id}/toggle}。
+     *
+     * <p>完了状態を切り替えます。</p>
+     *
+     * @param id ToDo ID
+     * @param loginUser ログインユーザー
+     * @return リダイレクト先
+     * @throws TodoNotFoundException 対象ToDoが存在しない場合
+     */
     @PostMapping("/{id}/toggle")
     @PreAuthorize("hasRole('ADMIN') or @todoSecurityService.isOwner(#id, principal)")
     public String toggle(@PathVariable("id") Long id,
@@ -282,6 +443,12 @@ public class TodoController {
         return "redirect:/todo";
     }
 
+    /**
+     * ToDo一覧をCSV文字列へ変換します。
+     *
+     * @param todos ToDo一覧
+     * @return CSV文字列
+     */
     private String buildCsv(List<Todo> todos) {
         StringBuilder sb = new StringBuilder();
         sb.append("ID,Title,Created By,Status,Created At").append("\r\n");
@@ -299,6 +466,12 @@ public class TodoController {
         return sb.toString();
     }
 
+    /**
+     * CSV出力向けに値をエスケープします。
+     *
+     * @param value 変換対象
+     * @return CSVエスケープ済み文字列
+     */
     private String escapeCsv(String value) {
         if (value == null) {
             return "";
@@ -309,6 +482,13 @@ public class TodoController {
         return needsQuote ? "\"" + escaped + "\"" : escaped;
     }
 
+    /**
+     * ロケール対応メッセージを取得します。
+     *
+     * @param code メッセージコード
+     * @param args 埋め込み引数
+     * @return 解決済みメッセージ
+     */
     private String message(String code, Object... args) {
         return messageSource.getMessage(code, args, LocaleContextHolder.getLocale());
     }

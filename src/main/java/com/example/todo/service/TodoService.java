@@ -28,6 +28,17 @@ import com.example.todo.model.Priority;
 import com.example.todo.model.Todo;
 import com.example.todo.model.TodoHistory;
 
+/**
+ * ToDoの業務ロジックを提供するサービスです。
+ *
+ * <p>本クラスは {@link TodoMapper} を使ったCRUD、監査ログ、履歴記録、
+ * 非同期後処理（メール・レポート）を統合します。</p>
+ *
+ * @author academia
+ * @version 1.0
+ * @since 1.0
+ * @see com.example.todo.controller.TodoController
+ */
 @Service
 public class TodoService {
 
@@ -42,6 +53,17 @@ public class TodoService {
     private final NotificationService notificationService;
     private final MailService mailService;
 
+    /**
+     * コンストラクタです。
+     *
+     * @param todoMapper ToDo Mapper
+     * @param todoHistoryMapper 履歴Mapper
+     * @param userMapper ユーザーMapper
+     * @param auditLogService 監査ログサービス
+     * @param todoAttachmentService 添付ファイルサービス
+     * @param notificationService 非同期通知サービス
+     * @param mailService メール送信サービス
+     */
     public TodoService(TodoMapper todoMapper, TodoHistoryMapper todoHistoryMapper, UserMapper userMapper,
             AuditLogService auditLogService, TodoAttachmentService todoAttachmentService,
             NotificationService notificationService, MailService mailService) {
@@ -54,6 +76,17 @@ public class TodoService {
         this.mailService = mailService;
     }
 
+    /**
+     * ToDoを新規作成します。
+     *
+     * @param title タイトル
+     * @param priority 優先度
+     * @param categoryId カテゴリID
+     * @param deadline 期限日
+     * @param userId 作成ユーザーID
+     * @param username 作成ユーザー名
+     * @throws IllegalStateException 履歴保存に失敗した場合
+     */
     @Transactional(rollbackFor = Exception.class, noRollbackFor = BusinessException.class)
     public void create(String title, Priority priority, Long categoryId, LocalDate deadline, Long userId,
             String username) {
@@ -77,6 +110,17 @@ public class TodoService {
         auditLogService.record("TODO_CREATE_SUCCESS", "todoId=" + todo.getId(), actor);
     }
 
+    /**
+     * ページング付きToDo一覧を取得します。
+     *
+     * @param pageable ページング情報
+     * @param sortByPriority 優先度ソートを有効にする場合は {@code true}
+     * @param sortByDeadline 期限ソートを有効にする場合は {@code true}
+     * @param categoryId カテゴリID
+     * @param userId ユーザーID
+     * @param admin 管理者フラグ
+     * @return ToDoページ
+     */
     @Transactional(readOnly = true)
     public Page<Todo> findPage(Pageable pageable, boolean sortByPriority, boolean sortByDeadline, Long categoryId,
             Long userId, boolean admin) {
@@ -95,26 +139,62 @@ public class TodoService {
         return new PageImpl<>(content, pageable, total);
     }
 
+    /**
+     * CSVエクスポート用のToDo一覧を取得します。
+     *
+     * @param userId ユーザーID
+     * @param admin 管理者フラグ
+     * @return エクスポート対象ToDo一覧
+     */
     @Transactional(readOnly = true)
     public List<Todo> findAllForExport(Long userId, boolean admin) {
         return admin ? todoMapper.findAll() : todoMapper.findAllByUserId(userId);
     }
 
+    /**
+     * API向けに全ToDoを取得します。
+     *
+     * @return ToDo一覧
+     */
     @Transactional(readOnly = true)
     public List<Todo> findAllForApi() {
         return todoMapper.findAll();
     }
 
+    /**
+     * 指定期間内で未完了かつ期限付きのToDoを取得します。
+     *
+     * @param startDate 開始日
+     * @param endDate 終了日
+     * @return 条件に一致するToDo一覧
+     */
     @Transactional(readOnly = true)
     public List<Todo> findIncompleteByDeadlineRange(LocalDate startDate, LocalDate endDate) {
         return todoMapper.findIncompleteByDeadlineRange(startDate, endDate);
     }
 
+    /**
+     * API向けにID指定でToDoを取得します。
+     *
+     * @param id ToDo ID
+     * @return ToDo。存在しない場合は {@code null}
+     */
     @Transactional(readOnly = true)
     public Todo findByIdForApi(Long id) {
         return todoMapper.findById(id);
     }
 
+    /**
+     * API向けにToDoを作成します。
+     *
+     * @param title タイトル
+     * @param completed 完了フラグ
+     * @param priority 優先度
+     * @param categoryId カテゴリID
+     * @param deadline 期限日
+     * @return 作成後のToDo
+     * @throws IllegalStateException 履歴保存に失敗した場合
+     */
     @Transactional(rollbackFor = Exception.class, noRollbackFor = BusinessException.class)
     @Auditable(action = "TODO_CREATE_API", entityType = "TODO", useResultAsEntityId = true, afterMethod = "findByIdForApi")
     public Todo createForApi(String title, boolean completed, Priority priority, Long categoryId, LocalDate deadline) {
@@ -138,6 +218,17 @@ public class TodoService {
         return todoMapper.findById(todo.getId());
     }
 
+    /**
+     * API向けにToDoを更新します。
+     *
+     * @param id ToDo ID
+     * @param title タイトル
+     * @param completed 完了フラグ
+     * @param priority 優先度
+     * @param categoryId カテゴリID
+     * @param deadline 期限日
+     * @return 更新後のToDo。対象が存在しない場合は {@code null}
+     */
     @Transactional(rollbackFor = Exception.class, noRollbackFor = BusinessException.class)
     @Auditable(action = "TODO_UPDATE_API", entityType = "TODO", entityIdArgIndex = 0, beforeMethod = "findByIdForApi", afterMethod = "findByIdForApi")
     public Todo updateForApi(Long id, String title, boolean completed, Priority priority, Long categoryId,
@@ -167,6 +258,12 @@ public class TodoService {
         return todoMapper.findById(id);
     }
 
+    /**
+     * API向けにToDoを削除します。
+     *
+     * @param id ToDo ID
+     * @return 削除成功時は {@code true}
+     */
     @Transactional(rollbackFor = Exception.class, noRollbackFor = BusinessException.class)
     @Auditable(action = "TODO_DELETE_API", entityType = "TODO", entityIdArgIndex = 0, beforeMethod = "findByIdForApi")
     public boolean deleteForApi(Long id) {
@@ -182,11 +279,27 @@ public class TodoService {
         return deleted;
     }
 
+    /**
+     * アクセス権を考慮してToDoを取得します。
+     *
+     * @param id ToDo ID
+     * @param userId ユーザーID
+     * @param admin 管理者フラグ
+     * @return 参照可能なToDo。存在しない、または権限がない場合は {@code null}
+     */
     @Transactional(readOnly = true)
     public Todo findByIdForAccess(Long id, Long userId, boolean admin) {
         return admin ? todoMapper.findById(id) : todoMapper.findByIdAndUserId(id, userId);
     }
 
+    /**
+     * ToDoを1件削除します。
+     *
+     * @param id ToDo ID
+     * @param userId 操作ユーザーID
+     * @param admin 管理者フラグ
+     * @return 削除成功時は {@code true}
+     */
     @Transactional(rollbackFor = Exception.class, noRollbackFor = BusinessException.class)
     @Auditable(action = "TODO_DELETE", entityType = "TODO", entityIdArgIndex = 0, beforeMethod = "findByIdForApi")
     public boolean deleteById(Long id, Long userId, boolean admin) {
@@ -202,6 +315,14 @@ public class TodoService {
         return deleted;
     }
 
+    /**
+     * ToDoを一括削除します。
+     *
+     * @param ids 削除対象ID一覧
+     * @param userId 操作ユーザーID
+     * @param admin 管理者フラグ
+     * @return 削除件数
+     */
     @Transactional(rollbackFor = Exception.class, noRollbackFor = BusinessException.class)
     public int deleteByIds(List<Integer> ids, Long userId, boolean admin) {
         if (ids == null || ids.isEmpty()) {
@@ -223,6 +344,18 @@ public class TodoService {
         return deleted;
     }
 
+    /**
+     * ToDoを更新します。
+     *
+     * @param id ToDo ID
+     * @param title タイトル
+     * @param priority 優先度
+     * @param categoryId カテゴリID
+     * @param deadline 期限日
+     * @param userId 操作ユーザーID
+     * @param admin 管理者フラグ
+     * @return 更新成功時は {@code true}
+     */
     @Transactional(rollbackFor = Exception.class, noRollbackFor = BusinessException.class)
     @Auditable(action = "TODO_UPDATE", entityType = "TODO", entityIdArgIndex = 0, beforeMethod = "findByIdForApi", afterMethod = "findByIdForApi")
     public boolean update(Long id, String title, Priority priority, Long categoryId, LocalDate deadline, Long userId,
@@ -252,6 +385,14 @@ public class TodoService {
         return updated;
     }
 
+    /**
+     * 完了状態をトグルします。
+     *
+     * @param id ToDo ID
+     * @param userId 操作ユーザーID
+     * @param admin 管理者フラグ
+     * @return 更新成功時は {@code true}
+     */
     @Transactional(rollbackFor = Exception.class, noRollbackFor = BusinessException.class)
     @Auditable(action = "TODO_TOGGLE", entityType = "TODO", entityIdArgIndex = 0, beforeMethod = "findByIdForApi", afterMethod = "findByIdForApi")
     public boolean toggleCompleted(Long id, Long userId, boolean admin) {
@@ -267,16 +408,38 @@ public class TodoService {
         return updated;
     }
 
+    /**
+     * ToDoの存在有無を確認します。
+     *
+     * @param id ToDo ID
+     * @return 存在する場合は {@code true}
+     */
     @Transactional(readOnly = true)
     public boolean existsById(Long id) {
         return todoMapper.existsById(id) > 0;
     }
 
+    /**
+     * 指定ユーザーがToDoの所有者かどうかを判定します。
+     *
+     * @param id ToDo ID
+     * @param userId ユーザーID
+     * @return 所有者である場合は {@code true}
+     */
     @Transactional(readOnly = true)
     public boolean isOwner(Long id, Long userId) {
         return todoMapper.countByIdAndUserId(id, userId) > 0;
     }
 
+    /**
+     * 操作履歴を保存します。
+     *
+     * @param todoId ToDo ID
+     * @param action 操作種別
+     * @param detail 詳細
+     * @param actor 操作者
+     * @throws IllegalStateException 履歴登録に失敗した場合
+     */
     private void saveHistory(Long todoId, String action, String detail, String actor) {
         TodoHistory history = new TodoHistory();
         history.setTodoId(todoId);
@@ -290,6 +453,13 @@ public class TodoService {
         }
     }
 
+    /**
+     * 非同期後処理（通知メール・レポート生成）を実行します。
+     *
+     * @param todoId ToDo ID
+     * @param title タイトル
+     * @param actor 操作者
+     */
     private void executeAsyncFollowUp(Long todoId, String title, String actor) {
         CompletableFuture<String> emailFuture = notificationService.sendTodoCreatedEmailAsync(actor, title);
         CompletableFuture<String> reportFuture = notificationService.generateTodoReportAsync(todoId, title);
@@ -317,6 +487,14 @@ public class TodoService {
         }
     }
 
+    /**
+     * ToDo作成通知メールを非同期キューへ投入します。
+     *
+     * @param userId ユーザーID
+     * @param title タイトル
+     * @param deadline 期限日
+     * @param actor 操作者
+     */
     private void queueTodoCreatedMail(Long userId, String title, LocalDate deadline, String actor) {
         if (userId == null) {
             return;
@@ -332,6 +510,13 @@ public class TodoService {
         auditLogService.record("TODO_MAIL_QUEUED", "userId=" + userId + ", email=" + user.getEmail(), actor);
     }
 
+    /**
+     * 監査ログ用の操作者名を正規化します。
+     *
+     * @param username ユーザー名
+     * @param userId ユーザーID
+     * @return ユーザー名があればその値、なければ {@code user:<ID>} か {@code system}
+     */
     private String normalizeActor(String username, Long userId) {
         if (username != null && !username.isBlank()) {
             return username;
