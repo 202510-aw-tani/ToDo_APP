@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ja" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title th:text="#{todo.list.title}">ToDo一覧</title>
+    <title th:text="#{todo.list.title}">ToDo荳隕ｧ</title>
     <link
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
         rel="stylesheet"
@@ -21,9 +21,9 @@
     </div>
 
     <div class="d-flex align-items-center justify-content-between mb-3">
-        <h1 class="h3 mb-0" th:text="#{todo.list.heading}">ToDo一覧</h1>
+        <h1 class="h3 mb-0" th:text="#{todo.list.heading}">ToDo荳隕ｧ</h1>
         <div class="d-flex align-items-center gap-2 flex-wrap justify-content-end">
-            <a class="btn btn-outline-secondary btn-sm" th:href="@{/todo(lang='ja', sort=${sort}, categoryId=${selectedCategoryId})}" th:text="#{lang.ja}">日本語</a>
+            <a class="btn btn-outline-secondary btn-sm" th:href="@{/todo(lang='ja', sort=${sort}, categoryId=${selectedCategoryId})}" th:text="#{lang.ja}">譌･譛ｬ隱・/a>
             <a class="btn btn-outline-secondary btn-sm" th:href="@{/todo(lang='en', sort=${sort}, categoryId=${selectedCategoryId})}" th:text="#{lang.en}">English</a>
             <span class="small text-muted" sec:authorize="isAuthenticated()">
                 <span th:text="#{todo.list.loggedInAs}">Signed in:</span> <strong sec:authentication="name">user</strong>
@@ -33,21 +33,23 @@
             </form>
             <a sec:authorize="hasRole('ADMIN')" class="btn btn-outline-dark" th:href="@{/admin/users}" href="/admin/users"
                th:text="#{todo.list.userAdmin}">
-                ユーザー管理
+                繝ｦ繝ｼ繧ｶ繝ｼ邂｡逅・            </a>
+            <a sec:authorize="hasRole('ADMIN')" class="btn btn-outline-dark" th:href="@{/admin/audit-logs}" href="/admin/audit-logs">
+                Audit Logs
             </a>
             <a class="btn btn-outline-secondary"
                th:classappend="${sort == 'id'} ? 'active' : ''"
-               th:href="@{/todo(sort='id', categoryId=${selectedCategoryId})}" href="/todo?sort=id" th:text="#{todo.list.sort.id}">ID順</a>
+               th:href="@{/todo(sort='id', categoryId=${selectedCategoryId})}" href="/todo?sort=id" th:text="#{todo.list.sort.id}">ID鬆・/a>
             <a class="btn btn-outline-secondary"
                th:classappend="${sort == 'priority'} ? 'active' : ''"
-               th:href="@{/todo(sort='priority', categoryId=${selectedCategoryId})}" href="/todo?sort=priority" th:text="#{todo.list.sort.priority}">優先度順</a>
+               th:href="@{/todo(sort='priority', categoryId=${selectedCategoryId})}" href="/todo?sort=priority" th:text="#{todo.list.sort.priority}">蜆ｪ蜈亥ｺｦ鬆・/a>
             <a class="btn btn-outline-secondary"
                th:classappend="${sort == 'deadline'} ? 'active' : ''"
-               th:href="@{/todo(sort='deadline', categoryId=${selectedCategoryId})}" href="/todo?sort=deadline" th:text="#{todo.list.sort.deadline}">期限日順</a>
+               th:href="@{/todo(sort='deadline', categoryId=${selectedCategoryId})}" href="/todo?sort=deadline" th:text="#{todo.list.sort.deadline}">譛滄剞譌･鬆・/a>
             <form class="d-flex align-items-center gap-2" th:action="@{/todo}" action="/todo" method="get">
                 <input type="hidden" name="sort" th:value="${sort}">
                 <select class="form-select" name="categoryId" style="min-width: 160px;">
-                    <option value="" th:text="#{todo.list.allCategories}">全カテゴリ</option>
+                    <option value="" th:text="#{todo.list.allCategories}">蜈ｨ繧ｫ繝・ざ繝ｪ</option>
                     <option th:each="category : ${categories}"
                             th:value="${category.id}"
                             th:text="${category.name}"
@@ -55,19 +57,19 @@
                         Category
                     </option>
                 </select>
-                <button type="submit" class="btn btn-outline-secondary" th:text="#{common.filter}">絞り込み</button>
-                <a class="btn btn-outline-secondary" th:href="@{/todo(sort=${sort})}" href="/todo" th:text="#{common.reset}">リセット</a>
+                <button type="submit" class="btn btn-outline-secondary" th:text="#{common.filter}">邨槭ｊ霎ｼ縺ｿ</button>
+                <a class="btn btn-outline-secondary" th:href="@{/todo(sort=${sort})}" href="/todo" th:text="#{common.reset}">繝ｪ繧ｻ繝・ヨ</a>
             </form>
-            <a class="btn btn-outline-secondary" th:href="@{/todo/export}" href="/todo/export" th:text="#{todo.list.csv}">CSVダウンロード</a>
-            <a class="btn btn-primary" href="/todo/new" th:text="#{todo.list.new}">新規登録</a>
+            <a class="btn btn-outline-secondary" th:href="@{/todo/export}" href="/todo/export" th:text="#{todo.list.csv}">CSV繝繧ｦ繝ｳ繝ｭ繝ｼ繝・/a>
+            <a class="btn btn-primary" href="/todo/new" th:text="#{todo.list.new}">譁ｰ隕冗匳骭ｲ</a>
         </div>
     </div>
 
     <div th:if="${todoPage.empty}" class="card shadow-sm">
         <div class="card-body text-center py-5">
-            <h2 class="h5 mb-2" th:text="#{todo.list.empty.title}">ToDoがまだ登録されていません</h2>
-            <p class="text-muted mb-4" th:text="#{todo.list.empty.desc}">まずは1件、ToDoを新規作成してみましょう。</p>
-            <a class="btn btn-primary" href="/todo/new" th:text="#{todo.list.empty.button}">新規作成</a>
+            <h2 class="h5 mb-2" th:text="#{todo.list.empty.title}">ToDo縺後∪縺逋ｻ骭ｲ縺輔ｌ縺ｦ縺・∪縺帙ｓ</h2>
+            <p class="text-muted mb-4" th:text="#{todo.list.empty.desc}">縺ｾ縺壹・1莉ｶ縲ゝoDo繧呈眠隕丈ｽ懈・縺励※縺ｿ縺ｾ縺励ｇ縺・・/p>
+            <a class="btn btn-primary" href="/todo/new" th:text="#{todo.list.empty.button}">譁ｰ隕丈ｽ懈・</a>
         </div>
     </div>
 
@@ -86,13 +88,13 @@
                         <input type="checkbox" id="selectAll">
                     </th>
                     <th style="width: 80px;" th:text="#{todo.list.id}">ID</th>
-                    <th th:text="#{todo.list.titleCol}">タイトル</th>
-                    <th sec:authorize="hasRole('ADMIN')" style="width: 120px;" th:text="#{todo.list.createdBy}">作成者</th>
-                    <th style="width: 120px;" th:text="#{todo.list.priority}">優先度</th>
-                    <th style="width: 140px;" th:text="#{todo.list.category}">カテゴリ</th>
-                    <th style="width: 140px;" th:text="#{todo.list.deadline}">期限日</th>
-                    <th style="width: 120px;" th:text="#{todo.list.status}">完了状態</th>
-                    <th style="width: 120px;" th:text="#{common.actions}">操作</th>
+                    <th th:text="#{todo.list.titleCol}">繧ｿ繧､繝医Ν</th>
+                    <th sec:authorize="hasRole('ADMIN')" style="width: 120px;" th:text="#{todo.list.createdBy}">菴懈・閠・/th>
+                    <th style="width: 120px;" th:text="#{todo.list.priority}">蜆ｪ蜈亥ｺｦ</th>
+                    <th style="width: 140px;" th:text="#{todo.list.category}">繧ｫ繝・ざ繝ｪ</th>
+                    <th style="width: 140px;" th:text="#{todo.list.deadline}">譛滄剞譌･</th>
+                    <th style="width: 120px;" th:text="#{todo.list.status}">螳御ｺ・憾諷・/th>
+                    <th style="width: 120px;" th:text="#{common.actions}">謫堺ｽ・/th>
                 </tr>
                 </thead>
                 <tbody>
@@ -109,35 +111,35 @@
                     <td>
                         <span class="badge"
                               th:classappend="${todo.priority.badgeClass}"
-                              th:text="${#messages.msg('priority.' + todo.priority.name())}">中</span>
+                              th:text="${#messages.msg('priority.' + todo.priority.name())}">荳ｭ</span>
                     </td>
                     <td>
                         <span th:if="${todo.category != null}"
                               class="badge text-white"
                               th:style="'background-color:' + ${todo.category.color}"
                               th:text="${todo.category.name}">Category</span>
-                        <span th:if="${todo.category == null}" class="text-muted" th:text="#{common.notSelected}">未選択</span>
+                        <span th:if="${todo.category == null}" class="text-muted" th:text="#{common.notSelected}">譛ｪ驕ｸ謚・/span>
                     </td>
                     <td>
                         <div th:text="${todo.deadline != null ? #temporals.format(todo.deadline, 'yyyy-MM-dd') : '-'}">-</div>
                         <div class="small">
-                            <span th:if="${todo.overdue}" class="text-danger" th:text="#{todo.list.overdue}">期限切れ</span>
+                            <span th:if="${todo.overdue}" class="text-danger" th:text="#{todo.list.overdue}">譛滄剞蛻・ｌ</span>
                             <span th:if="${!todo.overdue and todo.nearDeadline}"
                                   class="text-warning-emphasis"
-                                  th:text="${#messages.msg('todo.list.daysLeft', todo.daysUntilDeadline)}">あと3日</span>
+                                  th:text="${#messages.msg('todo.list.daysLeft', todo.daysUntilDeadline)}">縺ゅ→3譌･</span>
                         </div>
                     </td>
-                    <td th:text="${todo.completed ? #messages.msg('todo.list.status.done') : #messages.msg('todo.list.status.notDone')}">未完了</td>
+                    <td th:text="${todo.completed ? #messages.msg('todo.list.status.done') : #messages.msg('todo.list.status.notDone')}">譛ｪ螳御ｺ・/td>
                     <td>
                         <form th:action="@{/todo/{id}/toggle(id=${todo.id})}" action="/todo/1/toggle" method="post" class="d-inline me-2">
                             <button type="submit" class="btn btn-outline-secondary btn-sm"
-                                    th:text="${todo.completed ? #messages.msg('todo.list.markUndone') : #messages.msg('todo.list.markDone')}">完了にする</button>
+                                    th:text="${todo.completed ? #messages.msg('todo.list.markUndone') : #messages.msg('todo.list.markDone')}">螳御ｺ・↓縺吶ｋ</button>
                         </form>
                         <a class="btn btn-outline-primary btn-sm me-2"
-                           th:href="@{/todo/{id}/edit(id=${todo.id})}" href="/todo/1/edit" th:text="#{common.edit}">編集</a>
+                           th:href="@{/todo/{id}/edit(id=${todo.id})}" href="/todo/1/edit" th:text="#{common.edit}">邱ｨ髮・/a>
                         <form th:action="@{/todo/{id}/delete(id=${todo.id})}" action="/todo/1/delete" method="post" class="d-inline"
                               onsubmit="return confirm('Are you sure to delete this item?')">
-                            <button type="submit" class="btn btn-danger btn-sm" th:text="#{common.delete}">削除</button>
+                            <button type="submit" class="btn btn-danger btn-sm" th:text="#{common.delete}">蜑企勁</button>
                         </form>
                     </td>
                 </tr>
@@ -146,16 +148,16 @@
         </div>
         <div class="card-footer d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
             <div class="text-muted small">
-                <span th:text="${#messages.msg('todo.list.range', totalCount, rangeStart, rangeEnd)}">全0件中 0-0件</span>
+                <span th:text="${#messages.msg('todo.list.range', totalCount, rangeStart, rangeEnd)}">蜈ｨ0莉ｶ荳ｭ 0-0莉ｶ</span>
             </div>
             <div class="d-flex align-items-center gap-2">
-                <button type="submit" form="bulkDeleteForm" class="btn btn-danger btn-sm" th:text="#{todo.list.bulkDelete}">選択した項目を削除</button>
+                <button type="submit" form="bulkDeleteForm" class="btn btn-danger btn-sm" th:text="#{todo.list.bulkDelete}">驕ｸ謚槭＠縺滄・岼繧貞炎髯､</button>
                 <nav aria-label="ToDo pagination">
                     <ul class="pagination mb-0">
                         <li class="page-item" th:classappend="${todoPage.first} ? 'disabled' : ''">
                             <a class="page-link"
                                th:href="${todoPage.first} ? '#' : @{/todo(page=${todoPage.number - 1}, sort=${sort}, categoryId=${selectedCategoryId})}"
-                               th:attr="aria-label=#{common.previous}" th:text="#{common.previous}">前へ</a>
+                               th:attr="aria-label=#{common.previous}" th:text="#{common.previous}">蜑阪∈</a>
                         </li>
                         <li class="page-item" th:each="pageNumber : ${pageNumbers}"
                             th:classappend="${pageNumber == todoPage.number} ? 'active' : ''">
@@ -166,7 +168,7 @@
                         <li class="page-item" th:classappend="${todoPage.last} ? 'disabled' : ''">
                             <a class="page-link"
                                th:href="${todoPage.last} ? '#' : @{/todo(page=${todoPage.number + 1}, sort=${sort}, categoryId=${selectedCategoryId})}"
-                               th:attr="aria-label=#{common.next}" th:text="#{common.next}">次へ</a>
+                               th:attr="aria-label=#{common.next}" th:text="#{common.next}">谺｡縺ｸ</a>
                         </li>
                     </ul>
                 </nav>
@@ -210,3 +212,5 @@
 </style>
 </body>
 </html>
+
+

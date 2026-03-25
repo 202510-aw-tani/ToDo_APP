@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import com.example.todo.audit.Auditable;
 import com.example.todo.exception.BusinessException;
 import com.example.todo.mapper.TodoHistoryMapper;
 import com.example.todo.mapper.TodoMapper;
@@ -115,6 +116,7 @@ public class TodoService {
     }
 
     @Transactional(rollbackFor = Exception.class, noRollbackFor = BusinessException.class)
+    @Auditable(action = "TODO_CREATE_API", entityType = "TODO", useResultAsEntityId = true, afterMethod = "findByIdForApi")
     public Todo createForApi(String title, boolean completed, Priority priority, Long categoryId, LocalDate deadline) {
         String actor = "api";
         auditLogService.record("TODO_CREATE_API_START", "title=" + title, actor);
@@ -137,6 +139,7 @@ public class TodoService {
     }
 
     @Transactional(rollbackFor = Exception.class, noRollbackFor = BusinessException.class)
+    @Auditable(action = "TODO_UPDATE_API", entityType = "TODO", entityIdArgIndex = 0, beforeMethod = "findByIdForApi", afterMethod = "findByIdForApi")
     public Todo updateForApi(Long id, String title, boolean completed, Priority priority, Long categoryId,
             LocalDate deadline) {
         String actor = "api";
@@ -165,6 +168,7 @@ public class TodoService {
     }
 
     @Transactional(rollbackFor = Exception.class, noRollbackFor = BusinessException.class)
+    @Auditable(action = "TODO_DELETE_API", entityType = "TODO", entityIdArgIndex = 0, beforeMethod = "findByIdForApi")
     public boolean deleteForApi(Long id) {
         String actor = "api";
         auditLogService.record("TODO_DELETE_API_START", "todoId=" + id, actor);
@@ -184,6 +188,7 @@ public class TodoService {
     }
 
     @Transactional(rollbackFor = Exception.class, noRollbackFor = BusinessException.class)
+    @Auditable(action = "TODO_DELETE", entityType = "TODO", entityIdArgIndex = 0, beforeMethod = "findByIdForApi")
     public boolean deleteById(Long id, Long userId, boolean admin) {
         String actor = normalizeActor(null, userId);
         auditLogService.record("TODO_DELETE_START", "todoId=" + id, actor);
@@ -219,6 +224,7 @@ public class TodoService {
     }
 
     @Transactional(rollbackFor = Exception.class, noRollbackFor = BusinessException.class)
+    @Auditable(action = "TODO_UPDATE", entityType = "TODO", entityIdArgIndex = 0, beforeMethod = "findByIdForApi", afterMethod = "findByIdForApi")
     public boolean update(Long id, String title, Priority priority, Long categoryId, LocalDate deadline, Long userId,
             boolean admin) {
         String actor = normalizeActor(null, userId);
@@ -247,6 +253,7 @@ public class TodoService {
     }
 
     @Transactional(rollbackFor = Exception.class, noRollbackFor = BusinessException.class)
+    @Auditable(action = "TODO_TOGGLE", entityType = "TODO", entityIdArgIndex = 0, beforeMethod = "findByIdForApi", afterMethod = "findByIdForApi")
     public boolean toggleCompleted(Long id, Long userId, boolean admin) {
         Todo todo = findByIdForAccess(id, userId, admin);
         if (todo == null) {

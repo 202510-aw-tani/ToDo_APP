@@ -16,6 +16,7 @@
             <span class="small text-muted" sec:authorize="isAuthenticated()">
                 <span th:text="#{todo.list.loggedInAs}">Signed in:</span> <strong sec:authentication="name">admin</strong>
             </span>
+            <a class="btn btn-outline-dark" th:href="@{/admin/audit-logs}" href="/admin/audit-logs">Audit Logs</a>
             <a class="btn btn-outline-secondary" th:href="@{/todo}" href="/todo" th:text="#{admin.users.backTodo}">Back to ToDo</a>
         </div>
     </div>

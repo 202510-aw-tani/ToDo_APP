@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.StringUtils;
 
+import com.example.todo.audit.Auditable;
 import com.example.todo.mapper.TodoMapper;
 import com.example.todo.mapper.UserMapper;
 import com.example.todo.model.AppUser;
@@ -60,6 +61,7 @@ public class UserService {
         return userMapper.findById(user.getId());
     }
 
+    @Auditable(action = "USER_UPDATE_ADMIN", entityType = "USER", entityIdArgIndex = 0, beforeMethod = "findById", afterMethod = "findById")
     public boolean updateByAdmin(Long id, String role, boolean enabled, String newPassword) {
         AppUser user = userMapper.findById(id);
         if (user == null) {
@@ -71,6 +73,7 @@ public class UserService {
     }
 
     @Transactional
+    @Auditable(action = "USER_DELETE_ADMIN", entityType = "USER", entityIdArgIndex = 0, beforeMethod = "findById")
     public boolean deleteUserAndTodos(Long id) {
         AppUser user = userMapper.findById(id);
         if (user == null) {

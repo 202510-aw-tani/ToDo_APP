@@ -4,10 +4,53 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.todo.mapper.AuditLogMapper">
 
+    <resultMap id="AuditLogResultMap" type="com.example.todo.model.AuditLog">
+        <id property="id" column="id" />
+        <result property="action" column="action" />
+        <result property="entityType" column="entity_type" />
+        <result property="entityId" column="entity_id" />
+        <result property="userId" column="user_id" />
+        <result property="oldValue" column="old_value" />
+        <result property="newValue" column="new_value" />
+        <result property="ipAddress" column="ip_address" />
+        <result property="createdAt" column="created_at" />
+    </resultMap>
+
     <insert id="insert" parameterType="com.example.todo.model.AuditLog"
             useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO audit_logs (event_type, detail, actor, created_at)
-        VALUES (#{eventType}, #{detail}, #{actor}, #{createdAt})
+        INSERT INTO audit_logs (action, entity_type, entity_id, user_id, old_value, new_value, ip_address, created_at)
+        VALUES (#{action}, #{entityType}, #{entityId}, #{userId}, #{oldValue}, #{newValue}, #{ipAddress}, #{createdAt})
     </insert>
+
+    <select id="search" resultMap="AuditLogResultMap">
+        SELECT id, action, entity_type, entity_id, user_id, old_value, new_value, ip_address, created_at
+        FROM audit_logs
+        <where>
+            <if test="action != null and action != ''">
+                action LIKE CONCAT('%', #{action}, '%')
+            </if>
+            <if test="entityType != null and entityType != ''">
+                AND entity_type = #{entityType}
+            </if>
+            <if test="userId != null">
+                AND user_id = #{userId}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (
+                    old_value LIKE CONCAT('%', #{keyword}, '%')
+                    OR new_value LIKE CONCAT('%', #{keyword}, '%')
+                    OR ip_address LIKE CONCAT('%', #{keyword}, '%')
+                )
+            </if>
+            <if test="fromAt != null">
+                AND created_at <![CDATA[>=]]> #{fromAt}
+            </if>
+            <if test="toAtExclusive != null">
+                AND created_at <![CDATA[<]]> #{toAtExclusive}
+            </if>
+        </where>
+        ORDER BY id DESC
+        LIMIT #{limit}
+    </select>
 
 </mapper>
