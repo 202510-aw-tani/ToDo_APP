@@ -3,6 +3,13 @@ package com.example.todo.service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -20,17 +27,22 @@ import com.example.todo.model.TodoHistory;
 @Service
 public class TodoService {
 
+    private static final Logger log = LoggerFactory.getLogger(TodoService.class);
+    private static final long ASYNC_RESULT_TIMEOUT_SECONDS = 3L;
+
     private final TodoMapper todoMapper;
     private final TodoHistoryMapper todoHistoryMapper;
     private final AuditLogService auditLogService;
     private final TodoAttachmentService todoAttachmentService;
+    private final NotificationService notificationService;
 
     public TodoService(TodoMapper todoMapper, TodoHistoryMapper todoHistoryMapper, AuditLogService auditLogService,
-            TodoAttachmentService todoAttachmentService) {
+            TodoAttachmentService todoAttachmentService, NotificationService notificationService) {
         this.todoMapper = todoMapper;
         this.todoHistoryMapper = todoHistoryMapper;
         this.auditLogService = auditLogService;
         this.todoAttachmentService = todoAttachmentService;
+        this.notificationService = notificationService;
     }
 
     @Transactional(rollbackFor = Exception.class, noRollbackFor = BusinessException.class)
@@ -51,6 +63,7 @@ public class TodoService {
         todoMapper.insert(todo);
 
         saveHistory(todo.getId(), "CREATE", "title=" + title, actor);
+        executeAsyncFollowUp(todo.getId(), title, actor);
         auditLogService.record("TODO_CREATE_SUCCESS", "todoId=" + todo.getId(), actor);
     }
 
@@ -104,6 +117,7 @@ public class TodoService {
         todoMapper.insert(todo);
 
         saveHistory(todo.getId(), "CREATE", "api create title=" + title, actor);
+        executeAsyncFollowUp(todo.getId(), title, actor);
         auditLogService.record("TODO_CREATE_API_SUCCESS", "todoId=" + todo.getId(), actor);
         return todoMapper.findById(todo.getId());
     }
@@ -252,6 +266,33 @@ public class TodoService {
 
         if (todoHistoryMapper.insert(history) != 1) {
             throw new IllegalStateException("Failed to insert todo history");
+        }
+    }
+
+    private void executeAsyncFollowUp(Long todoId, String title, String actor) {
+        CompletableFuture<String> emailFuture = notificationService.sendTodoCreatedEmailAsync(actor, title);
+        CompletableFuture<String> reportFuture = notificationService.generateTodoReportAsync(todoId, title);
+        notificationService.notifyExternalSystemAsync(title);
+
+        try {
+            CompletableFuture.allOf(emailFuture, reportFuture).get(ASYNC_RESULT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+            String emailResult = emailFuture.get(ASYNC_RESULT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+            String reportResult = reportFuture.get(ASYNC_RESULT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+            auditLogService.record("TODO_ASYNC_SUCCESS",
+                    "todoId=" + todoId + ", email=" + emailResult + ", report=" + reportResult, actor);
+        } catch (TimeoutException ex) {
+            log.warn("Async follow-up timeout for todoId={}", todoId, ex);
+            auditLogService.record("TODO_ASYNC_TIMEOUT", "todoId=" + todoId + ", timeoutSeconds="
+                    + ASYNC_RESULT_TIMEOUT_SECONDS, actor);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            log.warn("Async follow-up interrupted for todoId={}", todoId, ex);
+            auditLogService.record("TODO_ASYNC_INTERRUPTED", "todoId=" + todoId, actor);
+        } catch (ExecutionException ex) {
+            Throwable cause = ex.getCause() != null ? ex.getCause() : ex;
+            log.error("Async follow-up failed for todoId={} message={}", todoId, cause.getMessage(), cause);
+            auditLogService.record("TODO_ASYNC_FAILURE",
+                    "todoId=" + todoId + ", reason=" + cause.getClass().getSimpleName(), actor);
         }
     }
 
